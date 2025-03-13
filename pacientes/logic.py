@@ -1,4 +1,4 @@
-import json
+
 from .models import Paciente
 
 def obtener_pacientes():

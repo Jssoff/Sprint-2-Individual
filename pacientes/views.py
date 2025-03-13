@@ -3,6 +3,10 @@ from .models import Paciente
 from historias_clinicas.models import HistoriaClinica
 import time
 
+
+def home(request):
+    return render(request, 'Paciente/home.html')
+
 def paciente_historial(request, paciente_id):
     start_time = time.time()
     
@@ -18,3 +22,9 @@ def paciente_historial(request, paciente_id):
         'consulta_time': consulta_time
     }
     return render(request, 'Paciente/paciente_historial.html', context)
+
+def paciente_list(request):
+    pacientes = Paciente.objects.all()
+    context = {'paciente_list': pacientes}
+    return render(request, 'Paciente/pacientes.html', context)
+
