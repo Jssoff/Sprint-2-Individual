@@ -1,0 +1,17 @@
+from django.db import models 
+
+class Paciente(models.Model):
+    TIPO_SANGRE_CHOICES = [
+        ('O+', 'O+'), ('O-', 'O-'), ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'), ('AB+', 'AB+'), ('AB-', 'AB-')
+    ]
+
+    nombre = models.CharField(max_length=255)
+    edad = models.IntegerField()
+    tipo_sangre = models.CharField(max_length=3, choices=TIPO_SANGRE_CHOICES, default='O+')
+    historia_clinica = models.CharField(max_length=50, unique=True)
+    alergias = models.TextField(blank=True, null=True)
+    condiciones_medicas = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre} (HC: {self.historia_clinica})"
