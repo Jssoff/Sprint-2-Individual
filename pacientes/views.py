@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Paciente
 from historias_clinicas.models import HistoriaClinica
 import time
+from django.http import HttpResponse
 
 
 def home(request):
@@ -28,3 +29,5 @@ def paciente_list(request):
     context = {'paciente_list': pacientes}
     return render(request, 'Paciente/pacientes.html', context)
 
+def healthCheck(request):
+    return HttpResponse('ok')
