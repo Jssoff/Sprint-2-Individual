@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reducir Imagen</title>
+</head>
+<body>
+    <h1>Imagen Reducida</h1>
+    {% if imagen %}
+        <p>Imagen procesada: {{ imagen.nombre }}</p>
+    {% else %}
+        <p>No hay imágenes cargadas.</p>
+    {% endif %}
+</body>
+</html>
