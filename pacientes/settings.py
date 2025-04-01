@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'pacientes',
     'historias_clinicas',
+    'imagen',
 ]
 
 
