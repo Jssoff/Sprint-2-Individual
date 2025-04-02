@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reducir Imagen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .message {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        .message p {
+            color: #555;
+        }
+        .image-info {
+            background-color: #e7f7e7;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .no-image {
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Imagen Reducida</h1>
+    <div class="message">
+        {% if imagen %}
+            <div class="image-info">
+                <p>Imagen procesada: {{ imagen.nombre }}</p>
+                <p>Paciente Asociado: {{imagen.paciente}}</p>
+                
+            </div>
+        {% else %}
+            <div class="no-image">
+                <p>No hay imágenes cargadas.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
