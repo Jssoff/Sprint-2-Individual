@@ -57,12 +57,17 @@
         {% if imagen %}
             <div class="image-info">
                 <p>Imagen procesada: {{ imagen.nombre }}</p>
-                <p>Paciente Asociado: {{imagen.paciente}}</p>
-                
+                <p>Paciente Asociado: {{ imagen.paciente }}</p>
+                <a href="{% url 'descargar_imagen' imagen.id %}" class="btn">Descargar Imagen</a>
             </div>
         {% else %}
             <div class="no-image">
                 <p>No hay imágenes cargadas.</p>
+            </div>
+        {% endif %}
+        {% if error %}
+            <div class="no-image">
+                <p>{{ error }}</p>
             </div>
         {% endif %}
     </div>
