@@ -56,6 +56,12 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
+<label for="paciente_id">Seleccione el Paciente:</label>
+        <select name="paciente_id" id="paciente_id" required>
+            {% for paciente in pacientes %}
+                <option value="{{ paciente.id }}">{{ paciente.nombre }}</option>
+            {% endfor %}
+        </select>
         <button type="submit">Cargar Imagen</button>
     </form>
 </body>
