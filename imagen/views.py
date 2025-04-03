@@ -19,7 +19,9 @@ def cargar_imagen(request):
             return redirect('reducir_imagen', paciente_id=paciente.id)
     else:
         form = ImagenMedicaForm()
-    return render(request, 'imagen/cargar_imagen.html', {'form': form})
+    
+    pacientes = Paciente.objects.all()  # Obtener todos los pacientes
+    return render(request, 'imagen/cargar_imagen.html', {'form': form, 'pacientes': pacientes})
 
 def reducir_imagen(request, paciente_id=None, paciente_nombre=None):
     # Buscar el paciente por ID o nombre
