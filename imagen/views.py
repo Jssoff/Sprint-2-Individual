@@ -10,9 +10,13 @@ import os
 def cargar_imagen(request):
     if request.method == 'POST':
         form = ImagenMedicaForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('reducir_imagen')
+        paciente_id = request.POST.get('paciente_id')  # Obtener el ID del paciente del formulario
+        if form.is_valid() and paciente_id:
+            paciente = get_object_or_404(Paciente, id=paciente_id)
+            imagen = form.save(commit=False)
+            imagen.paciente = paciente  # Asociar la imagen con el paciente
+            imagen.save()
+            return redirect('reducir_imagen', paciente_id=paciente.id)
     else:
         form = ImagenMedicaForm()
     return render(request, 'imagen/cargar_imagen.html', {'form': form})
@@ -28,6 +32,10 @@ def reducir_imagen(request, paciente_id=None, paciente_nombre=None):
     if paciente:
         # Buscar la última imagen asociada al paciente
         imagen = ImagenMedica.objects.filter(paciente=paciente).last()
+        if not imagen:
+            return render(request, 'imagen/reducir_imagen.html', {
+                'error': 'No se encontró ninguna imagen asociada al paciente.'
+            })
         if imagen:
             ruta_original = imagen.archivo.path
             ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
@@ -74,6 +82,8 @@ def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     if paciente:
         # Buscar la última imagen asociada al paciente
         imagen = ImagenMedica.objects.filter(paciente=paciente).last()
+        if not imagen:
+            return redirect('reducir_imagen', paciente_id=paciente.id)
         if imagen:
             return FileResponse(open(imagen.archivo.path, 'rb'), as_attachment=True, filename=imagen.nombre)
 
