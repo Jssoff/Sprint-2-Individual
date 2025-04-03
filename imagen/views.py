@@ -16,7 +16,7 @@ def cargar_imagen(request):
             imagen = form.save(commit=False)
             imagen.paciente = paciente  # Asociar la imagen con el paciente
             imagen.save()
-            return redirect('reducir_imagen', paciente_id=paciente.id)
+            return redirect('reducir_imagen', paciente_id=paciente.id)  # Redirigir con paciente_id
     else:
         form = ImagenMedicaForm()
     
