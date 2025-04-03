@@ -135,3 +135,22 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    'http://34.58.175.128:8000',  # Dominio del servicio
+    'http://34.28.194.101:8080',  # Otro dominio permitido
+]
+
+# Cookies seguras (ajusta según tu entorno)
+SESSION_COOKIE_SECURE = False  # Cambia a True si usas HTTPS
+CSRF_COOKIE_SECURE = False     # Cambia a True si usas HTTPS
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    'http://34.58.175.128:8000',
+    'http://34.28.194.101:8080',
+]
+
+# CORS Headers
+CORS_ALLOW_CREDENTIALS = True
