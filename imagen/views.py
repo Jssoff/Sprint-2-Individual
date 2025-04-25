@@ -23,7 +23,7 @@ def cargar_imagen(request):
     
     pacientes = Paciente.objects.all()  # Obtener todos los pacientes
     return render(request, 'imagen/cargar_imagen.html', {'form': form, 'pacientes': pacientes})
-
+@csrf_exempt  
 def reducir_imagen(request, paciente_id=None, paciente_nombre=None):
     # Buscar el paciente por ID o nombre
     paciente = None
@@ -73,7 +73,7 @@ def reducir_imagen(request, paciente_id=None, paciente_nombre=None):
         return render(request, 'imagen/reducir_imagen.html', {'imagen': imagen})
 
     return render(request, 'imagen/reducir_imagen.html', {'error': 'Paciente no encontrado.'})
-
+@csrf_exempt  
 def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     # Buscar el paciente por ID o nombre
     paciente = None
