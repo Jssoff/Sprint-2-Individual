@@ -44,6 +44,13 @@ INSTALLED_APPS = [
     'imagen',
 ]
 
+# Desactivar la protección CSRF completamente (solo para pruebas)
+CSRF_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
