@@ -54,7 +54,7 @@
 <body>
     <h1>Cargar Imagen Médica</h1>
     <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+   
         {{ form.as_p }}
         <label for="paciente_id">Seleccione el Paciente:</label>
         <select name="paciente_id" id="paciente_id" required>
