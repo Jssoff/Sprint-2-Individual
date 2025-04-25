@@ -5,8 +5,9 @@ from .models import ImagenMedica
 from pacientes.models import Paciente  # Importar el modelo Paciente
 import nibabel as nib
 import numpy as np
+from django.views.decorators.csrf import csrf_exempt
 import os
-
+@csrf_exempt  
 def cargar_imagen(request):
     if request.method == 'POST':
         form = ImagenMedicaForm(request.POST, request.FILES)
