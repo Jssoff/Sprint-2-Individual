@@ -17,7 +17,6 @@ from django.utils.crypto import get_random_string
 
 CSRF_TOKEN_LENGTH = 64  # Longitud requerida
 CSRF_COOKIE_NAME = "csrftoken"
-CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
 
 # Sobrescribe la función de generación del token
 def _get_new_csrf_token():
