@@ -46,7 +46,8 @@ INSTALLED_APPS = [
 
 
 
-
+CSRF_COOKIE_SECURE = True  
+CSRF_COOKIE_SAMESITE = 'Lax'  
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
