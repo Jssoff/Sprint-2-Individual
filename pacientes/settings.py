@@ -12,7 +12,18 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+# settings.py
+from django.utils.crypto import get_random_string
 
+CSRF_TOKEN_LENGTH = 64  # Longitud requerida
+CSRF_COOKIE_NAME = "csrftoken"
+CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
+
+# Sobrescribe la función de generación del token
+def _get_new_csrf_token():
+    return get_random_string(CSRF_TOKEN_LENGTH)
+
+CSRF_TOKEN_GENERATOR = _get_new_csrf_token  # Aplica la nueva función
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
