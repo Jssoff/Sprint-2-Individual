@@ -142,18 +142,11 @@ def visualizar_imagenes(request, paciente_id):
     visualizaciones = []
     for img in imagenes:
         try:
-            # Usar la imagen reducida si existe
-            if '_reducida' in img.nombre:
-                visualizacion = {
-                    'nombre': img.nombre,
-                    'ruta': img.archivo.url  # Usar la URL de la imagen reducida
-                }
-            else:
-                visualizacion = {
-                    'nombre': img.nombre,
-                    'ruta': None,
-                    'error': 'No se encontró una versión reducida de esta imagen.'
-                }
+            # Usar la imagen original para la visualización
+            visualizacion = {
+                'nombre': img.nombre,
+                'ruta': img.archivo.url  # Usar la URL de la imagen original
+            }
             visualizaciones.append(visualizacion)
         except Exception as e:
             visualizaciones.append({
