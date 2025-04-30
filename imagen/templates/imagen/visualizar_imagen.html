@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualización de Imágenes</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            background: #000;
+        }
+        .image-preview {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Visualización de Imágenes MRI</h1>
+    <div class="grid-container" id="image-grid"></div>
+
+    <script>
+        async function loadImages(pacienteId) {
+            const response = await fetch(`/visualizar/${pacienteId}/`);
+            const data = await response.json();
+            
+            const grid = document.getElementById('image-grid');
+            grid.innerHTML = '';
+            
+            data.imagenes.forEach(img => {
+                const container = document.createElement('div');
+                container.className = 'image-container';
+                container.innerHTML = `
+                    <div class="loading">Cargando...</div>
+                    <img class="image-preview" 
+                         src="data:image/png;base64,${img.data}" 
+                         alt="${img.nombre}"
+                         onload="this.previousElementSibling.remove()">
+                `;
+                grid.appendChild(container);
+            });
+        }
+        
+        // Obtener paciente_id desde la URL
+        const pathParts = window.location.pathname.split('/');
+        const pacienteId = pathParts[pathParts.length - 2];
+        loadImages(pacienteId);
+    </script>
+</body>
+</html>

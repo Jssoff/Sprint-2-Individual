@@ -5,6 +5,10 @@ from .models import ImagenMedica
 from pacientes.models import Paciente  # Importar el modelo Paciente
 import nibabel as nib
 import numpy as np
+from django.http import JsonResponse
+from io import BytesIO
+import matplotlib.pyplot as plt
+import base64
 from django.views.decorators.csrf import csrf_exempt
 import os
 @csrf_exempt  
@@ -91,3 +95,29 @@ def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
             return FileResponse(open(imagen.archivo.path, 'rb'), as_attachment=True, filename=imagen.nombre)
 
     return redirect('reducir_imagen')
+
+def generar_vista_previa(nii_path, slice_index=100):
+    img = nib.load(nii_path)
+    data = img.get_fdata()
+    slice_data = data[:, :, slice_index] if data.ndim == 3 else data[:, :]
+    
+    plt.axis('off')
+    plt.imshow(slice_data.T, cmap='gray', origin='lower')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0)
+    plt.close()
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+def visualizar_imagenes(request, paciente_id):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')[:6]
+    
+    previews = []
+    for img in imagenes:
+        preview = {
+            'nombre': img.nombre,
+            'data': generar_vista_previa(img.archivo.path)
+        }
+        previews.append(preview)
+    
+    return JsonResponse({'imagenes': previews})
