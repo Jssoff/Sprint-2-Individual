@@ -1,22 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse
 from .forms import ImagenMedicaForm
 from .models import ImagenMedica
 from pacientes.models import Paciente  # Importar el modelo Paciente
 import nibabel as nib
 import numpy as np
-from django.http import JsonResponse
 from io import BytesIO
 import matplotlib.pyplot as plt
 import base64
 from django.views.decorators.csrf import csrf_exempt
 import os
-import uuid
 from django.conf import settings
 import plotly.graph_objects as go
 from nilearn import plotting, image
-from django.core.paginator import Paginator
-from django.template.loader import render_to_string
 
 @csrf_exempt  
 def cargar_imagen(request):
@@ -203,13 +199,15 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 # Cargar la imagen NIfTI
                 img = image.load_img(nifti_path)
 
-                # Generar la visualización interactiva
+                # Generar la visualización interactiva y guardarla como HTML
                 html_view = plotting.view_img(img, title=imagen.nombre)
+                output_html_path = os.path.splitext(nifti_path)[0] + '_interactive.html'
+                html_view.save_as_html(output_html_path)
 
                 # Agregar la visualización al contexto
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'view': html_view.get_iframe()
+                    'html_path': os.path.relpath(output_html_path, settings.MEDIA_ROOT)
                 })
             except Exception as e:
                 visualizaciones.append({
