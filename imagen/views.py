@@ -193,24 +193,16 @@ def visualizar_imagenes_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')
 
-    # Configurar la paginación para mostrar 3 imágenes por página
-    paginator = Paginator(imagenes, 3)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    # Procesar imágenes NIfTI y generar visualizaciones
     visualizaciones = []
-    for imagen in page_obj.object_list:
+    for imagen in imagenes:
         if imagen.archivo.name.endswith('.nii') or imagen.archivo.name.endswith('.nii.gz'):
-            # Ruta del archivo NIfTI
             nifti_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
 
             try:
                 # Validar si el archivo NIfTI es válido
-                nib.load(nifti_path)
-
-                # Generar la visualización siempre
                 img = image.load_img(nifti_path)
+
+                # Generar la visualización directamente
                 plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
                 plotting.show()
 
@@ -219,14 +211,12 @@ def visualizar_imagenes_paciente(request, paciente_id):
                     'mensaje': "Visualización generada exitosamente."
                 })
             except Exception as e:
-                # Manejar archivos dañados o inválidos
                 visualizaciones.append({
                     'nombre': imagen.nombre,
                     'error': f"Error al procesar el archivo: {str(e)}"
                 })
 
     return render(request, 'imagen/visualizar_imagenes_paciente.html', {
-        'page_obj': page_obj,
         'paciente': paciente,
         'visualizaciones': visualizaciones
     })
