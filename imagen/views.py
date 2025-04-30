@@ -15,6 +15,7 @@ import uuid
 from django.conf import settings
 import plotly.graph_objects as go
 from nilearn import plotting
+from nilearn import image
 
 @csrf_exempt  
 def cargar_imagen(request):
@@ -139,6 +140,9 @@ def generar_vistas_2d(nii_path):
     if not os.path.exists(nii_path):
         raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
 
+    # Cargar la imagen NIfTI utilizando nilearn.image
+    img = image.load_img(nii_path)
+
     # Generar vistas axiales, sagitales y coronales
     output_dir = os.path.dirname(nii_path)
     base_name = os.path.splitext(os.path.basename(nii_path))[0]
@@ -147,9 +151,9 @@ def generar_vistas_2d(nii_path):
     sagittal_path = os.path.join(output_dir, f"{base_name}_sagittal.png")
     coronal_path = os.path.join(output_dir, f"{base_name}_coronal.png")
 
-    plotting.plot_anat(nii_path, display_mode='z', output_file=axial_path, title="Vista Axial")
-    plotting.plot_anat(nii_path, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
-    plotting.plot_anat(nii_path, display_mode='y', output_file=coronal_path, title="Vista Coronal")
+    plotting.plot_img(img, display_mode='z', output_file=axial_path, title="Vista Axial")
+    plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
+    plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
 
     return {
         'axial': axial_path,
