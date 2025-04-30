@@ -14,6 +14,7 @@ import os
 import uuid
 from django.conf import settings
 import plotly.graph_objects as go
+from nilearn import plotting
 
 @csrf_exempt  
 def cargar_imagen(request):
@@ -134,6 +135,28 @@ def generar_vista_3d(nii_path):
     fig.write_html(output_path)
     return output_path
 
+def generar_vistas_2d(nii_path):
+    if not os.path.exists(nii_path):
+        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
+
+    # Generar vistas axiales, sagitales y coronales
+    output_dir = os.path.dirname(nii_path)
+    base_name = os.path.splitext(os.path.basename(nii_path))[0]
+
+    axial_path = os.path.join(output_dir, f"{base_name}_axial.png")
+    sagittal_path = os.path.join(output_dir, f"{base_name}_sagittal.png")
+    coronal_path = os.path.join(output_dir, f"{base_name}_coronal.png")
+
+    plotting.plot_anat(nii_path, display_mode='z', output_file=axial_path, title="Vista Axial")
+    plotting.plot_anat(nii_path, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
+    plotting.plot_anat(nii_path, display_mode='y', output_file=coronal_path, title="Vista Coronal")
+
+    return {
+        'axial': axial_path,
+        'sagittal': sagittal_path,
+        'coronal': coronal_path
+    }
+
 def visualizar_imagenes(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     # Obtener las últimas 6 imágenes asociadas al paciente
@@ -142,16 +165,17 @@ def visualizar_imagenes(request, paciente_id):
     visualizaciones = []
     for img in imagenes:
         try:
-            # Usar la imagen original para la visualización
+            # Generar vistas 2D de la imagen
+            vistas = generar_vistas_2d(img.archivo.path)
             visualizacion = {
                 'nombre': img.nombre,
-                'ruta': img.archivo.url  # Usar la URL de la imagen original
+                'vistas': vistas
             }
             visualizaciones.append(visualizacion)
         except Exception as e:
             visualizaciones.append({
                 'nombre': img.nombre,
-                'ruta': None,
+                'vistas': None,
                 'error': str(e)
             })
 
