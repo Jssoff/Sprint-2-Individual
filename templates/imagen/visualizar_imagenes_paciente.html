@@ -73,6 +73,18 @@
             </div>
         {% endfor %}
     </div>
+    <div class="image-container">
+        {% for vis in visualizaciones %}
+            <div class="image-item">
+                <h3>{{ vis.nombre }}</h3>
+                {% if vis.data %}
+                    <img src="data:image/png;base64,{{ vis.data }}" alt="{{ vis.nombre }}">
+                {% else %}
+                    <p>Error: {{ vis.error }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
     <div class="pagination">
         {% if page_obj.has_previous %}
             <a href="?page=1">Primera</a>

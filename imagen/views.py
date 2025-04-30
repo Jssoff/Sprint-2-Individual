@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from .forms import ImagenMedicaForm
 from .models import ImagenMedica
 from pacientes.models import Paciente  # Importar el modelo Paciente
@@ -14,8 +14,7 @@ import os
 import uuid
 from django.conf import settings
 import plotly.graph_objects as go
-from nilearn import plotting
-from nilearn import image
+from nilearn import plotting, image
 from django.core.paginator import Paginator
 
 @csrf_exempt  
@@ -199,32 +198,29 @@ def visualizar_imagenes_paciente(request, paciente_id):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Procesar imágenes NIfTI y generar visualizaciones
     visualizaciones = []
     for imagen in page_obj.object_list:
         if imagen.archivo.name.endswith('.nii') or imagen.archivo.name.endswith('.nii.gz'):
-            # Ruta del archivo NIfTI
             nifti_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
-            # Ruta para guardar la visualización
-            output_path = os.path.join(settings.MEDIA_ROOT, 'visualizaciones', f'{imagen.id}.png')
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
             try:
                 # Validar si el archivo NIfTI es válido
                 nib.load(nifti_path)
 
-                # Generar la visualización si no existe
-                if not os.path.exists(output_path):
-                    display = plotting.plot_anat(nifti_path, display_mode='ortho', title=imagen.nombre)
-                    display.savefig(output_path)
-                    display.close()
+                # Generar la visualización y convertirla a base64
+                img = image.load_img(nifti_path)
+                buffer = BytesIO()
+                display = plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
+                display.savefig(buffer, format='png')
+                display.close()
+                buffer.seek(0)
+                image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'url': os.path.join(settings.MEDIA_URL, 'visualizaciones', f'{imagen.id}.png')
+                    'data': image_base64
                 })
             except Exception as e:
-                # Manejar archivos dañados o inválidos
                 visualizaciones.append({
                     'nombre': imagen.nombre,
                     'error': f"Error al procesar el archivo: {str(e)}"
