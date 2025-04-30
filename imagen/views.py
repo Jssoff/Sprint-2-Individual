@@ -112,6 +112,10 @@ def generar_vista_3d(nii_path):
     img = nib.load(nii_path)
     data = img.get_fdata()
 
+    # Reducir la resolución de los datos para optimizar el uso de memoria
+    if data.shape[0] > 128 or data.shape[1] > 128 or data.shape[2] > 128:
+        data = data[::2, ::2, ::2]  # Reducir la resolución a la mitad
+
     # Crear coordenadas espaciales para los ejes x, y, z
     x, y, z = np.mgrid[0:data.shape[0], 0:data.shape[1], 0:data.shape[2]]
 
@@ -132,20 +136,29 @@ def generar_vista_3d(nii_path):
 
 def visualizar_imagenes(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
+    # Obtener las últimas 6 imágenes asociadas al paciente
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')[:6]
 
     visualizaciones = []
     for img in imagenes:
         try:
-            visualizacion = {
-                'nombre': img.nombre,
-                'ruta_3d': generar_vista_3d(img.archivo.path)
-            }
+            # Usar la imagen reducida si existe
+            if '_reducida' in img.nombre:
+                visualizacion = {
+                    'nombre': img.nombre,
+                    'ruta': img.archivo.url  # Usar la URL de la imagen reducida
+                }
+            else:
+                visualizacion = {
+                    'nombre': img.nombre,
+                    'ruta': None,
+                    'error': 'No se encontró una versión reducida de esta imagen.'
+                }
             visualizaciones.append(visualizacion)
-        except FileNotFoundError as e:
+        except Exception as e:
             visualizaciones.append({
                 'nombre': img.nombre,
-                'ruta_3d': None,
+                'ruta': None,
                 'error': str(e)
             })
 
