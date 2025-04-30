@@ -13,7 +13,8 @@ import os
 from django.conf import settings
 import plotly.graph_objects as go
 from nilearn import plotting, image
-
+import warnings
+warnings.filterwarnings("ignore", message="Warning: 'partition' will ignore the 'mask' of the MaskedArray")
 @csrf_exempt  
 def cargar_imagen(request):
     if request.method == 'POST':
