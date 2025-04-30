@@ -203,12 +203,12 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 img = image.load_img(nifti_path)
 
                 # Generar la visualización directamente
-                plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
-                plotting.show()
+                a = plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
+               
 
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'mensaje': "Visualización generada exitosamente."
+                    'mensaje':  a.show(),
                 })
             except Exception as e:
                 visualizaciones.append({
