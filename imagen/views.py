@@ -199,7 +199,27 @@ def visualizar_imagenes_paciente(request, paciente_id):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Procesar imágenes NIfTI y generar visualizaciones
+    visualizaciones = []
+    for imagen in page_obj.object_list:
+        if imagen.archivo.name.endswith('.nii') or imagen.archivo.name.endswith('.nii.gz'):
+            # Ruta del archivo NIfTI
+            nifti_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
+            # Ruta para guardar la visualización
+            output_path = os.path.join(settings.MEDIA_ROOT, 'visualizaciones', f'{imagen.id}.png')
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+            # Generar la visualización si no existe
+            if not os.path.exists(output_path):
+                plotting.plot_anat(nifti_path, output_file=output_path, display_mode='ortho', title=imagen.nombre)
+
+            visualizaciones.append({
+                'nombre': imagen.nombre,
+                'url': os.path.join(settings.MEDIA_URL, 'visualizaciones', f'{imagen.id}.png')
+            })
+
     return render(request, 'imagen/visualizar_imagenes_paciente.html', {
         'page_obj': page_obj,
-        'paciente': paciente
+        'paciente': paciente,
+        'visualizaciones': visualizaciones
     })
