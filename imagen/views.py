@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import base64
 from django.views.decorators.csrf import csrf_exempt
 import os
+
 @csrf_exempt  
 def cargar_imagen(request):
     if request.method == 'POST':
@@ -97,10 +98,13 @@ def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     return redirect('reducir_imagen')
 
 def generar_vista_previa(nii_path, slice_index=100):
+    if not os.path.exists(nii_path):
+        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
+
     img = nib.load(nii_path)
     data = img.get_fdata()
     slice_data = data[:, :, slice_index] if data.ndim == 3 else data[:, :]
-    
+
     plt.axis('off')
     plt.imshow(slice_data.T, cmap='gray', origin='lower')
     buffer = BytesIO()
@@ -111,13 +115,20 @@ def generar_vista_previa(nii_path, slice_index=100):
 def visualizar_imagenes(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')[:6]
-    
+
     previews = []
     for img in imagenes:
-        preview = {
-            'nombre': img.nombre,
-            'data': generar_vista_previa(img.archivo.path)
-        }
-        previews.append(preview)
-    
+        try:
+            preview = {
+                'nombre': img.nombre,
+                'data': generar_vista_previa(img.archivo.path)
+            }
+            previews.append(preview)
+        except FileNotFoundError as e:
+            previews.append({
+                'nombre': img.nombre,
+                'data': None,
+                'error': str(e)
+            })
+
     return JsonResponse({'imagenes': previews})
