@@ -55,9 +55,9 @@ def reducir_imagen(request, paciente_id=None):
     try:
         img = nib.load(ruta_original)
         data = img.get_fdata()
-        reducido = data[::2, ::2, ::2]
+        
 
-        nib.save(nib.Nifti1Image(reducido, img.affine), ruta_reducida)
+        nib.save(nib.Nifti1Image(data, img.affine), ruta_reducida)
 
         # Guardar la imagen reducida como una nueva entrada en la base de datos
         nueva_imagen = ImagenMedica(
@@ -116,8 +116,7 @@ def generar_vista_3d(nii_path):
     data = img.get_fdata()
 
     # Reducir la resolución de los datos para optimizar el uso de memoria
-    if data.shape[0] > 128 or data.shape[1] > 128 or data.shape[2] > 128:
-        data = data[::2, ::2, ::2]  # Reducir la resolución a la mitad
+
 
     # Crear coordenadas espaciales para los ejes x, y, z
     x, y, z = np.mgrid[0:data.shape[0], 0:data.shape[1], 0:data.shape[2]]
