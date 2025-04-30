@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse
 from .forms import ImagenMedicaForm
 from .models import ImagenMedica
 from pacientes.models import Paciente  # Importar el modelo Paciente
@@ -198,29 +198,28 @@ def visualizar_imagenes_paciente(request, paciente_id):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Procesar imágenes NIfTI y generar visualizaciones
     visualizaciones = []
     for imagen in page_obj.object_list:
         if imagen.archivo.name.endswith('.nii') or imagen.archivo.name.endswith('.nii.gz'):
+            # Ruta del archivo NIfTI
             nifti_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
 
             try:
                 # Validar si el archivo NIfTI es válido
                 nib.load(nifti_path)
 
-                # Generar la visualización y convertirla a base64
+                # Generar la visualización siempre
                 img = image.load_img(nifti_path)
-                buffer = BytesIO()
-                display = plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
-                display.savefig(buffer, format='png')
-                display.close()
-                buffer.seek(0)
-                image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
+                plotting.show()
 
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'data': image_base64
+                    'mensaje': "Visualización generada exitosamente."
                 })
             except Exception as e:
+                # Manejar archivos dañados o inválidos
                 visualizaciones.append({
                     'nombre': imagen.nombre,
                     'error': f"Error al procesar el archivo: {str(e)}"
