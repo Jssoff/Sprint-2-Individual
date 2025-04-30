@@ -77,8 +77,8 @@
         {% for vis in visualizaciones %}
             <div class="visualization-item">
                 <h3>{{ vis.nombre }}</h3>
-                {% if vis.mensaje %}
-                    <p>{{ vis.mensaje }}</p>
+                {% if vis.data %}
+                    <img src="data:image/png;base64,{{ vis.data }}" alt="{{ vis.nombre }}">
                 {% else %}
                     <p>Error: {{ vis.error }}</p>
                 {% endif %}

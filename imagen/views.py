@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from .forms import ImagenMedicaForm
 from .models import ImagenMedica
 from pacientes.models import Paciente  # Importar el modelo Paciente
@@ -202,13 +202,17 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 # Validar si el archivo NIfTI es válido
                 img = image.load_img(nifti_path)
 
-                # Generar la visualización directamente
-                a = plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
-               
+                # Generar la visualización y convertirla a base64
+                buffer = BytesIO()
+                display = plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
+                display.savefig(buffer, format='png')
+                display.close()
+                buffer.seek(0)
+                image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'mensaje':  plotting.show(),
+                    'data': image_base64
                 })
             except Exception as e:
                 visualizaciones.append({
