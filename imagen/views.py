@@ -208,7 +208,7 @@ def visualizar_imagenes_paciente(request, paciente_id):
 
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'mensaje':  a.show(),
+                    'mensaje':  plotting.show(),
                 })
             except Exception as e:
                 visualizaciones.append({
