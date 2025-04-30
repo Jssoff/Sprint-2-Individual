@@ -16,6 +16,7 @@ from django.conf import settings
 import plotly.graph_objects as go
 from nilearn import plotting, image
 from django.core.paginator import Paginator
+from django.template.loader import render_to_string
 
 @csrf_exempt  
 def cargar_imagen(request):
@@ -199,20 +200,16 @@ def visualizar_imagenes_paciente(request, paciente_id):
             nifti_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
 
             try:
-                # Validar si el archivo NIfTI es válido
+                # Cargar la imagen NIfTI
                 img = image.load_img(nifti_path)
 
-                # Generar la visualización y convertirla a base64
-                buffer = BytesIO()
-                display = plotting.plot_img(img, display_mode='ortho', title=imagen.nombre)
-                display.savefig(buffer, format='png')
-                display.close()
-                buffer.seek(0)
-                image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                # Generar la visualización interactiva
+                html_view = plotting.view_img(img, title=imagen.nombre)
 
+                # Agregar la visualización al contexto
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'data': image_base64
+                    'view': html_view.get_iframe()
                 })
             except Exception as e:
                 visualizaciones.append({
