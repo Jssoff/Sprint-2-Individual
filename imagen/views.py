@@ -112,11 +112,14 @@ def generar_vista_3d(nii_path):
     img = nib.load(nii_path)
     data = img.get_fdata()
 
+    # Crear coordenadas espaciales para los ejes x, y, z
+    x, y, z = np.mgrid[0:data.shape[0], 0:data.shape[1], 0:data.shape[2]]
+
     # Crear una visualización 3D interactiva con Plotly
     fig = go.Figure(data=go.Volume(
-        x=data.shape[0],
-        y=data.shape[1],
-        z=data.shape[2],
+        x=x.flatten(),
+        y=y.flatten(),
+        z=z.flatten(),
         value=data.flatten(),
         opacity=0.1,  # Transparencia
         surface_count=20  # Número de superficies
