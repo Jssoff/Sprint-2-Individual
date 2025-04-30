@@ -34,34 +34,16 @@
 </head>
 <body>
     <h1>Visualización de Imágenes MRI</h1>
-    <div class="grid-container" id="image-grid"></div>
-
-    <script>
-        async function loadImages(pacienteId) {
-            const response = await fetch(`/visualizar/${pacienteId}/`);
-            const data = await response.json();
-            
-            const grid = document.getElementById('image-grid');
-            grid.innerHTML = '';
-            
-            data.imagenes.forEach(img => {
-                const container = document.createElement('div');
-                container.className = 'image-container';
-                container.innerHTML = `
-                    <div class="loading">Cargando...</div>
-                    <img class="image-preview" 
-                         src="data:image/png;base64,${img.data}" 
-                         alt="${img.nombre}"
-                         onload="this.previousElementSibling.remove()">
-                `;
-                grid.appendChild(container);
-            });
-        }
-        
-        // Obtener paciente_id desde la URL
-        const pathParts = window.location.pathname.split('/');
-        const pacienteId = pathParts[pathParts.length - 2];
-        loadImages(pacienteId);
-    </script>
+    <div class="grid-container" id="image-grid">
+        {% for img in imagenes %}
+            <div class="image-container">
+                {% if img.data %}
+                    <img class="image-preview" src="data:image/png;base64,{{ img.data }}" alt="{{ img.nombre }}">
+                {% else %}
+                    <div class="loading">Error: {{ img.error }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
 </body>
 </html>

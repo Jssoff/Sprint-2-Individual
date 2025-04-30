@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import base64
 from django.views.decorators.csrf import csrf_exempt
 import os
+import uuid
+from django.conf import settings
 
 @csrf_exempt  
 def cargar_imagen(request):
@@ -21,6 +23,11 @@ def cargar_imagen(request):
             paciente = get_object_or_404(Paciente, id=paciente_id)
             imagen = form.save(commit=False)
             imagen.paciente = paciente  # Asociar la imagen con el paciente
+
+            # Mantener el nombre original del archivo
+            original_name = os.path.basename(imagen.archivo.name)
+            imagen.archivo.name = os.path.join('imagenes', original_name)
+
             imagen.save()
             return redirect('reducir_imagen', paciente_id=paciente.id)  # Redirigir con paciente_id
     else:
@@ -29,55 +36,40 @@ def cargar_imagen(request):
     pacientes = Paciente.objects.all()  # Obtener todos los pacientes
     return render(request, 'imagen/cargar_imagen.html', {'form': form, 'pacientes': pacientes})
 
-def reducir_imagen(request, paciente_id=None, paciente_nombre=None):
-    # Buscar el paciente por ID o nombre
-    paciente = None
-    if paciente_id:
-        paciente = get_object_or_404(Paciente, id=paciente_id)
-    elif paciente_nombre:
-        paciente = get_object_or_404(Paciente, nombre=paciente_nombre)
+def reducir_imagen(request, paciente_id=None):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    imagen = ImagenMedica.objects.filter(paciente=paciente).last()
 
-    if paciente:
-        # Buscar la última imagen asociada al paciente
-        imagen = ImagenMedica.objects.filter(paciente=paciente).last()
-        if not imagen:
-            return render(request, 'imagen/reducir_imagen.html', {
-                'error': 'No se encontró ninguna imagen asociada al paciente.'
-            })
-        if imagen:
-            ruta_original = imagen.archivo.path
-            ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
+    if not imagen:
+        return render(request, 'imagen/reducir_imagen.html', {
+            'error': 'No se encontró ninguna imagen asociada al paciente.'
+        })
 
-            try:
-                # Cargar la imagen original
-                img = nib.load(ruta_original)
-                data = img.get_fdata()
+    ruta_original = imagen.archivo.path
+    ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
 
-                # Reducir la resolución
-                reducido = data[::2, ::2, ::2]
+    try:
+        img = nib.load(ruta_original)
+        data = img.get_fdata()
+        reducido = data[::2, ::2, ::2]
 
-                # Validar que la reducción no pierda información crítica
-                if np.abs(np.mean(data) - np.mean(reducido)) > 0.1:  # Ajustar el umbral según sea necesario
-                    return render(request, 'imagen/reducir_imagen.html', {
-                        'imagen': imagen,
-                        'error': 'La calidad de la imagen reducida no es aceptable.'
-                    })
+        nib.save(nib.Nifti1Image(reducido, img.affine), ruta_reducida)
 
-                # Guardar la imagen reducida en un nuevo archivo
-                nib.save(nib.Nifti1Image(reducido, img.affine), ruta_reducida)
+        # Guardar la imagen reducida como una nueva entrada en la base de datos
+        nueva_imagen = ImagenMedica(
+            nombre=f"{imagen.nombre}_reducida",
+            archivo=os.path.relpath(ruta_reducida, settings.MEDIA_ROOT),
+            paciente=paciente
+        )
+        nueva_imagen.save()
 
-                # Actualizar la ruta del archivo reducido en el contexto
-                imagen.archivo.name = os.path.basename(ruta_reducida)
+    except Exception as e:
+        return render(request, 'imagen/reducir_imagen.html', {
+            'imagen': imagen,
+            'error': f'Error al procesar la imagen: {str(e)}'
+        })
 
-            except Exception as e:
-                return render(request, 'imagen/reducir_imagen.html', {
-                    'imagen': imagen,
-                    'error': f'Error al procesar la imagen: {str(e)}'
-                })
-
-        return render(request, 'imagen/reducir_imagen.html', {'imagen': imagen})
-
-    return render(request, 'imagen/reducir_imagen.html', {'error': 'Paciente no encontrado.'})
+    return render(request, 'imagen/reducir_imagen.html', {'imagen': nueva_imagen})
 
 def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     # Buscar el paciente por ID o nombre
