@@ -30,6 +30,17 @@
             transform: translate(-50%, -50%);
             color: white;
         }
+        .visualization-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .visualization-item {
+            margin-bottom: 20px;
+        }
+        .visualization-item h3 {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -41,6 +52,18 @@
                     <img class="image-preview" src="data:image/png;base64,{{ img.data }}" alt="{{ img.nombre }}">
                 {% else %}
                     <div class="loading">Error: {{ img.error }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="visualization-container">
+        {% for vis in visualizaciones %}
+            <div class="visualization-item">
+                <h3>{{ vis.nombre }}</h3>
+                {% if vis.ruta_3d %}
+                    <iframe src="{{ vis.ruta_3d }}" width="100%" height="500px" frameborder="0"></iframe>
+                {% else %}
+                    <p>Error: {{ vis.error }}</p>
                 {% endif %}
             </div>
         {% endfor %}

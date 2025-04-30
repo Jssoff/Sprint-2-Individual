@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 import uuid
 from django.conf import settings
+import plotly.graph_objects as go
 
 @csrf_exempt  
 def cargar_imagen(request):
@@ -104,23 +105,45 @@ def generar_vista_previa(nii_path, slice_index=100):
     plt.close()
     return base64.b64encode(buffer.getvalue()).decode('utf-8')
 
+def generar_vista_3d(nii_path):
+    if not os.path.exists(nii_path):
+        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
+
+    img = nib.load(nii_path)
+    data = img.get_fdata()
+
+    # Crear una visualización 3D interactiva con Plotly
+    fig = go.Figure(data=go.Volume(
+        x=data.shape[0],
+        y=data.shape[1],
+        z=data.shape[2],
+        value=data.flatten(),
+        opacity=0.1,  # Transparencia
+        surface_count=20  # Número de superficies
+    ))
+
+    # Guardar la visualización como un archivo HTML
+    output_path = os.path.splitext(nii_path)[0] + '_3d.html'
+    fig.write_html(output_path)
+    return output_path
+
 def visualizar_imagenes(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')[:6]
 
-    previews = []
+    visualizaciones = []
     for img in imagenes:
         try:
-            preview = {
+            visualizacion = {
                 'nombre': img.nombre,
-                'data': generar_vista_previa(img.archivo.path)
+                'ruta_3d': generar_vista_3d(img.archivo.path)
             }
-            previews.append(preview)
+            visualizaciones.append(visualizacion)
         except FileNotFoundError as e:
-            previews.append({
+            visualizaciones.append({
                 'nombre': img.nombre,
-                'data': None,
+                'ruta_3d': None,
                 'error': str(e)
             })
 
-    return JsonResponse({'imagenes': previews})
+    return render(request, 'imagen/visualizar_imagen.html', {'visualizaciones': visualizaciones})
