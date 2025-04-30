@@ -209,14 +209,26 @@ def visualizar_imagenes_paciente(request, paciente_id):
             output_path = os.path.join(settings.MEDIA_ROOT, 'visualizaciones', f'{imagen.id}.png')
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-            # Generar la visualización si no existe
-            if not os.path.exists(output_path):
-                plotting.plot_anat(nifti_path, output_file=output_path, display_mode='ortho', title=imagen.nombre)
+            try:
+                # Validar si el archivo NIfTI es válido
+                nib.load(nifti_path)
 
-            visualizaciones.append({
-                'nombre': imagen.nombre,
-                'url': os.path.join(settings.MEDIA_URL, 'visualizaciones', f'{imagen.id}.png')
-            })
+                # Generar la visualización si no existe
+                if not os.path.exists(output_path):
+                    display = plotting.plot_anat(nifti_path, display_mode='ortho', title=imagen.nombre)
+                    display.savefig(output_path)
+                    display.close()
+
+                visualizaciones.append({
+                    'nombre': imagen.nombre,
+                    'url': os.path.join(settings.MEDIA_URL, 'visualizaciones', f'{imagen.id}.png')
+                })
+            except Exception as e:
+                # Manejar archivos dañados o inválidos
+                visualizaciones.append({
+                    'nombre': imagen.nombre,
+                    'error': f"Error al procesar el archivo: {str(e)}"
+                })
 
     return render(request, 'imagen/visualizar_imagenes_paciente.html', {
         'page_obj': page_obj,
