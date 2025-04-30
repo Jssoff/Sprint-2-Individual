@@ -16,6 +16,7 @@ from django.conf import settings
 import plotly.graph_objects as go
 from nilearn import plotting
 from nilearn import image
+from django.core.paginator import Paginator
 
 @csrf_exempt  
 def cargar_imagen(request):
@@ -184,3 +185,21 @@ def visualizar_imagenes(request, paciente_id):
             })
 
     return render(request, 'imagen/visualizar_imagen.html', {'visualizaciones': visualizaciones})
+
+def seleccionar_paciente(request):
+    pacientes = Paciente.objects.all()
+    return render(request, 'imagen/seleccionar_paciente.html', {'pacientes': pacientes})
+
+def visualizar_imagenes_paciente(request, paciente_id):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')
+
+    # Configurar la paginación para mostrar 3 imágenes por página
+    paginator = Paginator(imagenes, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'imagen/visualizar_imagenes_paciente.html', {
+        'page_obj': page_obj,
+        'paciente': paciente
+    })
