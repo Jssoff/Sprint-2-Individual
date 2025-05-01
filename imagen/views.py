@@ -138,7 +138,7 @@ def generar_vistas_2d(nii_path):
     if not os.path.exists(nii_path):
         raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
 
-    # Cargar la imagen NIfTI utilizando nilearn.image
+    # Cargar la imagen NIfTI
     img = image.load_img(nii_path)
 
     # Generar vistas axiales, sagitales y coronales
@@ -207,15 +207,13 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 # Cargar la imagen NIfTI
                 img = image.load_img(nifti_path)
 
-                # Generar la visualización interactiva y guardarla como HTML
-                html_view = plotting.view_img(img, title=imagen.nombre)
-                output_html_path = os.path.splitext(nifti_path)[0] + '_interactive.html'
-                html_view.save_as_html(output_html_path)
+                # Generar vistas 2D
+                vistas = generar_vistas_2d(nifti_path)
 
                 # Agregar la visualización al contexto
                 visualizaciones.append({
                     'nombre': imagen.nombre,
-                    'html_path': os.path.relpath(output_html_path, settings.MEDIA_ROOT)
+                    'vistas': vistas
                 })
             except Exception as e:
                 visualizaciones.append({
