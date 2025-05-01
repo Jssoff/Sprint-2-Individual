@@ -13,8 +13,31 @@ import os
 from django.conf import settings
 import plotly.graph_objects as go
 from nilearn import plotting, image
+from nilearn.image import resample_img
 import warnings
 warnings.filterwarnings("ignore", message="Warning: 'partition' will ignore the 'mask' of the MaskedArray")
+
+def reducir_resolucion(nii_path, output_path, target_shape=(64, 64, 64)):
+    """
+    Reduce la resolución de una imagen NIfTI y la guarda en un nuevo archivo.
+    """
+    if not os.path.exists(nii_path):
+        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
+
+    # Cargar la imagen NIfTI
+    img = nib.load(nii_path)
+
+    # Reducir la resolución
+    resampled_img = resample_img(img, target_affine=np.diag([
+        img.header.get_zooms()[0] * (img.shape[0] / target_shape[0]),
+        img.header.get_zooms()[1] * (img.shape[1] / target_shape[1]),
+        img.header.get_zooms()[2] * (img.shape[2] / target_shape[2])
+    ]), target_shape=target_shape)
+
+    # Guardar la imagen reducida
+    nib.save(resampled_img, output_path)
+    return output_path
+
 @csrf_exempt  
 def cargar_imagen(request):
     if request.method == 'POST':
@@ -29,7 +52,22 @@ def cargar_imagen(request):
             original_name = os.path.basename(imagen.archivo.name)
             imagen.archivo.name = os.path.join('imagenes', original_name)
 
+            # Guardar la imagen original
             imagen.save()
+
+            # Reducir la resolución de la imagen
+            ruta_original = imagen.archivo.path
+            ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
+            reducir_resolucion(ruta_original, ruta_reducida)
+
+            # Guardar la imagen reducida como una nueva entrada en la base de datos
+            nueva_imagen = ImagenMedica(
+                nombre=f"{imagen.nombre}_reducida",
+                archivo=os.path.relpath(ruta_reducida, settings.MEDIA_ROOT),
+                paciente=paciente
+            )
+            nueva_imagen.save()
+
             return redirect('reducir_imagen', paciente_id=paciente.id)  # Redirigir con paciente_id
     else:
         form = ImagenMedicaForm()
