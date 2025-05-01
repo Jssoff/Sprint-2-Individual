@@ -52,9 +52,8 @@ def reducir_imagen(request, paciente_id=None):
     try:
         img = nib.load(ruta_original)
         data = img.get_fdata()
-        reducido = data[::2, ::2, ::2]
 
-        nib.save(nib.Nifti1Image(reducido, img.affine), ruta_reducida)
+        nib.save(nib.Nifti1Image(data, img.affine), ruta_reducida)
 
         # Guardar la imagen reducida como una nueva entrada en la base de datos
         nueva_imagen = ImagenMedica(
@@ -112,9 +111,7 @@ def generar_vista_3d(nii_path):
     img = nib.load(nii_path)
     data = img.get_fdata()
 
-    # Reducir la resolución de los datos para optimizar el uso de memoria
-    if data.shape[0] > 128 or data.shape[1] > 128 or data.shape[2] > 128:
-        data = data[::2, ::2, ::2]  # Reducir la resolución a la mitad
+   
 
     # Crear coordenadas espaciales para los ejes x, y, z
     x, y, z = np.mgrid[0:data.shape[0], 0:data.shape[1], 0:data.shape[2]]
@@ -204,8 +201,13 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 continue
 
             try:
-                # Cargar la imagen NIfTI
-                img = image.load_img(nifti_path)
+                # Cargar la imagen NIfTI sin reducir los datos
+                img = nib.load(nifti_path)
+                data = img.get_fdata()
+
+                # Validar que los datos no estén vacíos
+                if data.size == 0:
+                    raise ValueError("El archivo NIfTI no contiene datos válidos.")
 
                 # Generar vistas 2D
                 vistas = generar_vistas_2d(nifti_path)
@@ -214,6 +216,16 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 visualizaciones.append({
                     'nombre': imagen.nombre,
                     'vistas': vistas
+                })
+            except FileNotFoundError as fnf_error:
+                visualizaciones.append({
+                    'nombre': imagen.nombre,
+                    'error': f"Archivo no encontrado: {str(fnf_error)}"
+                })
+            except ValueError as val_error:
+                visualizaciones.append({
+                    'nombre': imagen.nombre,
+                    'error': f"Error de validación: {str(val_error)}"
                 })
             except Exception as e:
                 visualizaciones.append({
