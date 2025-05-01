@@ -15,6 +15,12 @@ import plotly.graph_objects as go
 from nilearn import plotting, image
 from nilearn.image import resample_img
 import warnings
+import logging
+
+# Configurar el logger
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 warnings.filterwarnings("ignore", message="Warning: 'partition' will ignore the 'mask' of the MaskedArray")
 
 def reducir_resolucion(nii_path, output_path, target_shape=(64, 64, 64)):
@@ -263,23 +269,31 @@ def visualizar_imagenes_paciente(request, paciente_id):
     })
 
 def visualizar_imagen(request, imagen_id):
+    logger.debug("Iniciando la visualización de la imagen con ID: %s", imagen_id)
+
     # Obtener la imagen desde la base de datos
     imagen = get_object_or_404(ImagenMedica, id=imagen_id)
     nifti_path = imagen.archivo.path
+    logger.debug("Ruta del archivo NIfTI: %s", nifti_path)
 
     try:
-        # Verificar si el archivo existe y es válido
+        # Cargar la imagen NIfTI
+        logger.debug("Cargando el archivo NIfTI...")
         img = nib.load(nifti_path)
         data = img.get_fdata()
+        logger.debug("Dimensiones de los datos cargados: %s", data.shape)
 
+        # Validar que los datos no estén vacíos
         if data.size == 0:
             raise ValueError("El archivo NIfTI no contiene datos válidos.")
 
         # Seleccionar un corte en el eje Z (por ejemplo, el corte central)
         slice_index = data.shape[2] // 2
+        logger.debug("Índice del corte seleccionado: %d", slice_index)
         slice_data = data[:, :, slice_index]
 
         # Crear una imagen PNG del corte
+        logger.debug("Generando la imagen PNG del corte...")
         plt.figure(figsize=(6, 6))
         plt.axis('off')
         plt.imshow(slice_data.T, cmap='gray', origin='lower')
@@ -288,6 +302,7 @@ def visualizar_imagen(request, imagen_id):
         plt.close()
         buffer.seek(0)
         img_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+        logger.debug("Imagen PNG generada correctamente.")
 
         # Pasar la imagen al frontend
         return render(request, 'imagen/visualizar_imagen.html', {
@@ -297,10 +312,13 @@ def visualizar_imagen(request, imagen_id):
 
     except FileNotFoundError:
         error_message = "El archivo no se encontró. Por favor, verifica que el archivo exista."
+        logger.error(error_message)
     except ValueError as ve:
         error_message = f"Error en el archivo: {str(ve)}"
+        logger.error(error_message)
     except Exception as e:
         error_message = f"Error al procesar el archivo: {str(e)}"
+        logger.error(error_message)
 
     # Mostrar un mensaje de error en el HTML
     return render(request, 'imagen/visualizar_imagen.html', {
