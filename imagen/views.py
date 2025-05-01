@@ -119,11 +119,24 @@ def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
         # Buscar la última imagen asociada al paciente
         imagen = ImagenMedica.objects.filter(paciente=paciente).last()
         if not imagen:
-            return redirect('reducir_imagen', paciente_id=paciente.id)
-        if imagen:
-            return FileResponse(open(imagen.archivo.path, 'rb'), as_attachment=True, filename=imagen.nombre)
+            return render(request, 'imagen/reducir_imagen.html', {
+                'error': 'No se encontró ninguna imagen asociada al paciente.'
+            })
 
-    return redirect('reducir_imagen')
+        # Verificar que la imagen esté en formato PNG
+        if not imagen.archivo.name.endswith('.png'):
+            return render(request, 'imagen/reducir_imagen.html', {
+                'error': 'La imagen no está en formato PNG. Por favor, procese la imagen primero.'
+            })
+
+        # Descargar la imagen PNG
+        png_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
+        if os.path.exists(png_path):
+            return FileResponse(open(png_path, 'rb'), as_attachment=True, filename=os.path.basename(png_path))
+
+    return render(request, 'imagen/reducir_imagen.html', {
+        'error': 'No se pudo descargar la imagen.'
+    })
 
 def generar_vista_previa(nii_path, slice_index=100):
     if not os.path.exists(nii_path):
