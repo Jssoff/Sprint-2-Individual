@@ -184,9 +184,13 @@ def generar_vistas_2d(nii_path):
     sagittal_path = os.path.join(output_dir, f"{base_name}_sagittal.png")
     coronal_path = os.path.join(output_dir, f"{base_name}_coronal.png")
 
-    plotting.plot_img(img, display_mode='z', output_file=axial_path, title="Vista Axial")
-    plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
-    plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
+    # Verificar si las vistas ya existen
+    if not os.path.exists(axial_path):
+        plotting.plot_img(img, display_mode='z', output_file=axial_path, title="Vista Axial")
+    if not os.path.exists(sagittal_path):
+        plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
+    if not os.path.exists(coronal_path):
+        plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
 
     return {
         'axial': axial_path,
@@ -239,31 +243,13 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 continue
 
             try:
-                # Cargar la imagen NIfTI sin reducir los datos
-                img = nib.load(nifti_path)
-                data = img.get_fdata()
-
-                # Validar que los datos no estén vacíos
-                if data.size == 0:
-                    raise ValueError("El archivo NIfTI no contiene datos válidos.")
-
-                # Generar vistas 2D
+                # Generar vistas 2D preprocesadas si no existen
                 vistas = generar_vistas_2d(nifti_path)
 
-                # Agregar la visualización al contexto
+                # Agregar las vistas preprocesadas al contexto
                 visualizaciones.append({
                     'nombre': imagen.nombre,
                     'vistas': vistas
-                })
-            except FileNotFoundError as fnf_error:
-                visualizaciones.append({
-                    'nombre': imagen.nombre,
-                    'error': f"Archivo no encontrado: {str(fnf_error)}"
-                })
-            except ValueError as val_error:
-                visualizaciones.append({
-                    'nombre': imagen.nombre,
-                    'error': f"Error de validación: {str(val_error)}"
                 })
             except Exception as e:
                 visualizaciones.append({
@@ -278,19 +264,25 @@ def visualizar_imagenes_paciente(request, paciente_id):
 
 def visualizar_imagen(request, imagen_id):
     # Obtener la imagen desde la base de datos
-    imagen = ImagenMedica.objects.get(id=imagen_id)
+    imagen = get_object_or_404(ImagenMedica, id=imagen_id)
     nifti_path = imagen.archivo.path
 
     try:
         # Cargar la imagen NIfTI
         img = nib.load(nifti_path)
+        data = img.get_fdata()
 
-        # Generar la vista interactiva con Nilearn
-        display = plotting.view_img(img, title=imagen.nombre)
+        # Seleccionar un corte en el eje Z (por ejemplo, el corte central)
+        slice_index = data.shape[2] // 2
+        slice_data = data[:, :, slice_index]
 
-        # Convertir la vista a base64
+        # Crear una imagen PNG del corte
+        plt.figure(figsize=(6, 6))
+        plt.axis('off')
+        plt.imshow(slice_data.T, cmap='gray', origin='lower')
         buffer = BytesIO()
-        display.savefig(buffer, format='png')
+        plt.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0)
+        plt.close()
         buffer.seek(0)
         img_base64 = base64.b64encode(buffer.read()).decode('utf-8')
 
@@ -301,4 +293,7 @@ def visualizar_imagen(request, imagen_id):
         })
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        return render(request, 'imagen/visualizar_imagen.html', {
+            'imagen': imagen,
+            'error': f"Error al procesar el archivo: {str(e)}"
+        })
