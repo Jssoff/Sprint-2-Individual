@@ -311,28 +311,30 @@ def procesar_imagen(request, imagen_id):
         img = nib.load(nifti_path)
         data = img.get_fdata()
 
-        # Seleccionar un corte en el eje Z (por ejemplo, el corte central)
-        slice_index = data.shape[2] // 2
-        slice_data = data[:, :, slice_index]
-
-        # Crear una imagen PNG del corte
-        output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas')
+        # Crear un directorio para almacenar los cortes procesados
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', os.path.splitext(imagen.nombre)[0])
         os.makedirs(output_dir, exist_ok=True)
-        png_path = os.path.join(output_dir, f"{os.path.splitext(imagen.nombre)[0]}.png")
 
-        plt.figure(figsize=(6, 6))
-        plt.axis('off')
-        plt.imshow(slice_data.T, cmap='gray', origin='lower')
-        plt.savefig(png_path, bbox_inches='tight', pad_inches=0)
-        plt.close()
+        # Generar un PNG para cada corte en el eje Z
+        for slice_index in range(data.shape[2]):
+            slice_data = data[:, :, slice_index]
 
-        # Actualizar la ruta del archivo procesado en la base de datos
-        imagen.archivo.name = os.path.relpath(png_path, settings.MEDIA_ROOT)
+            # Crear una imagen PNG del corte
+            png_path = os.path.join(output_dir, f"slice_{slice_index}.png")
+
+            plt.figure(figsize=(6, 6))
+            plt.axis('off')
+            plt.imshow(slice_data.T, cmap='gray', origin='lower')
+            plt.savefig(png_path, bbox_inches='tight', pad_inches=0)
+            plt.close()
+
+        # Actualizar la ruta del directorio procesado en la base de datos
+        imagen.archivo.name = os.path.relpath(output_dir, settings.MEDIA_ROOT)
         imagen.save()
 
         return render(request, 'imagen/reducir_imagen.html', {
             'imagen': imagen,
-            'mensaje': 'La imagen ha sido procesada y convertida a PNG.'
+            'mensaje': 'La imagen ha sido procesada y convertida a múltiples PNGs.'
         })
 
     except Exception as e:
