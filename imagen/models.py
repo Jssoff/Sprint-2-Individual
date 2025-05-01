@@ -6,6 +6,9 @@ class ImagenMedica(models.Model):
     archivo = models.FileField(upload_to='imagenes/')
     fecha_carga = models.DateTimeField(auto_now_add=True)
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name='imagenes')  # Relación con Paciente
+    vista_axial = models.FileField(upload_to='imagenes/', null=True, blank=True)
+    vista_sagital = models.FileField(upload_to='imagenes/', null=True, blank=True)
+    vista_coronal = models.FileField(upload_to='imagenes/', null=True, blank=True)
 
     def __str__(self):
         return self.nombre

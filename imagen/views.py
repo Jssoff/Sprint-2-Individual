@@ -335,6 +335,12 @@ def procesar_imagen(request, imagen_id):
         plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
         plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
 
+        # Save the paths of the generated views in the database
+        imagen.vista_axial = os.path.relpath(axial_path, settings.MEDIA_ROOT)
+        imagen.vista_sagital = os.path.relpath(sagittal_path, settings.MEDIA_ROOT)
+        imagen.vista_coronal = os.path.relpath(coronal_path, settings.MEDIA_ROOT)
+        imagen.save()
+
         # Actualizar la ruta de los archivos procesados en la base de datos
         imagen.archivo.name = os.path.relpath(axial_path, settings.MEDIA_ROOT)  # Guardar solo la vista axial como referencia principal
         imagen.save()
