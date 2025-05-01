@@ -249,6 +249,18 @@ def visualizar_imagenes_paciente(request, paciente_id):
                     'ruta': view_path
                 })
 
+        # Agregar las rutas de las vistas sagital y coronal al contexto
+        if imagen.vista_sagital:
+            visualizaciones.append({
+                'nombre': f"{imagen.nombre} Sagital",
+                'ruta': imagen.vista_sagital.url
+            })
+        if imagen.vista_coronal:
+            visualizaciones.append({
+                'nombre': f"{imagen.nombre} Coronal",
+                'ruta': imagen.vista_coronal.url
+            })
+
     return render(request, 'imagen/visualizar_imagenes_paciente.html', {
         'paciente': paciente,
         'visualizaciones': visualizaciones
