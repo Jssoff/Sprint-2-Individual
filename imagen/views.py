@@ -351,3 +351,28 @@ def mostrar_imagen(request, imagen_id):
         'imagen': imagen,
         'png_path': os.path.relpath(png_path, settings.MEDIA_ROOT)
     })
+
+def reducir_imagen(request, paciente_id):
+    # Obtener el paciente desde la base de datos
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+
+    # Recuperar todas las imágenes asociadas al paciente
+    imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')
+
+    # Crear una lista de visualizaciones con las rutas de las imágenes PNG
+    visualizaciones = []
+    for imagen in imagenes:
+        # Verificar si la imagen tiene un directorio de imágenes procesadas
+        imagen_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', str(paciente.id), os.path.splitext(imagen.nombre)[0])
+        if os.path.exists(imagen_dir):
+            for file_name in os.listdir(imagen_dir):
+                if file_name.endswith('.png'):
+                    visualizaciones.append({
+                        'nombre': file_name,
+                        'ruta': os.path.join(settings.MEDIA_URL, 'procesadas', str(paciente.id), os.path.splitext(imagen.nombre)[0], file_name)
+                    })
+
+    return render(request, 'imagen/reducir_imagen.html', {
+        'paciente': paciente,
+        'visualizaciones': visualizaciones
+    })
