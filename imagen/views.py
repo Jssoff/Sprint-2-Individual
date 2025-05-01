@@ -33,16 +33,8 @@ def reducir_resolucion(nii_path, output_path, target_shape=(64, 64, 64)):
     # Cargar la imagen NIfTI
     img = nib.load(nii_path)
 
-    # Reducir la resolución
-    resampled_img = resample_img(img, target_affine=np.diag([
-        img.header.get_zooms()[0] * (img.shape[0] / target_shape[0]),
-        img.header.get_zooms()[1] * (img.shape[1] / target_shape[1]),
-        img.header.get_zooms()[2] * (img.shape[2] / target_shape[2])
-    ]), target_shape=target_shape)
-
-    # Guardar la imagen reducida
-    nib.save(resampled_img, output_path)
-    return output_path
+   
+    return img
 
 @csrf_exempt  
 def cargar_imagen(request):
