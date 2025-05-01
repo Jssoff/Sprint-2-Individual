@@ -224,35 +224,20 @@ def seleccionar_paciente(request):
     return render(request, 'imagen/seleccionar_paciente.html', {'pacientes': pacientes})
 
 def visualizar_imagenes_paciente(request, paciente_id):
+    # Obtener el paciente desde la base de datos
     paciente = get_object_or_404(Paciente, id=paciente_id)
+
+    # Recuperar todas las imágenes asociadas al paciente
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')
 
+    # Crear una lista de visualizaciones con las rutas de las imágenes PNG
     visualizaciones = []
     for imagen in imagenes:
-        if imagen.archivo.name.endswith('.nii') or imagen.archivo.name.endswith('.nii.gz'):
-            nifti_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
-
-            if not os.path.exists(nifti_path):
-                visualizaciones.append({
-                    'nombre': imagen.nombre,
-                    'error': f"El archivo {imagen.archivo.name} no existe o no se puede acceder."
-                })
-                continue
-
-            try:
-                # Generar vistas 2D preprocesadas si no existen
-                vistas = generar_vistas_2d(nifti_path)
-
-                # Agregar las vistas preprocesadas al contexto
-                visualizaciones.append({
-                    'nombre': imagen.nombre,
-                    'vistas': vistas
-                })
-            except Exception as e:
-                visualizaciones.append({
-                    'nombre': imagen.nombre,
-                    'error': f"Error al procesar el archivo: {str(e)}"
-                })
+        if imagen.archivo.name.endswith('.png'):
+            visualizaciones.append({
+                'nombre': imagen.nombre,
+                'ruta': imagen.archivo.url  # Usar la URL del archivo para mostrarlo en el HTML
+            })
 
     return render(request, 'imagen/visualizar_imagenes_paciente.html', {
         'paciente': paciente,
@@ -327,28 +312,36 @@ def procesar_imagen(request, imagen_id):
         img = nib.load(nifti_path)
         data = img.get_fdata()
 
-        # Seleccionar un corte en el eje Z (por ejemplo, el corte central)
-        slice_index = data.shape[2] // 2
-        slice_data = data[:, :, slice_index]
-
-        # Crear una imagen PNG del corte
-        output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas')
+        # Crear una carpeta para almacenar los cortes
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', f"{imagen.id}")
         os.makedirs(output_dir, exist_ok=True)
-        png_path = os.path.join(output_dir, f"{os.path.splitext(imagen.nombre)[0]}.png")
 
-        plt.figure(figsize=(6, 6))
-        plt.axis('off')
-        plt.imshow(slice_data.T, cmap='gray', origin='lower')
-        plt.savefig(png_path, bbox_inches='tight', pad_inches=0)
-        plt.close()
+        # Generar cortes axiales, sagitales y coronales
+        cortes = {
+            'axial': data[:, :, data.shape[2] // 2],
+            'sagital': data[data.shape[0] // 2, :, :],
+            'coronal': data[:, data.shape[1] // 2, :]
+        }
 
-        # Actualizar la ruta del archivo procesado en la base de datos
-        imagen.archivo.name = os.path.relpath(png_path, settings.MEDIA_ROOT)
+        rutas_cortes = {}
+        for corte, datos in cortes.items():
+            png_path = os.path.join(output_dir, f"{corte}.png")
+            plt.figure(figsize=(6, 6))
+            plt.axis('off')
+            plt.imshow(datos.T, cmap='gray', origin='lower')
+            plt.savefig(png_path, bbox_inches='tight', pad_inches=0)
+            plt.close()
+            rutas_cortes[corte] = os.path.relpath(png_path, settings.MEDIA_ROOT)
+
+        # Guardar las rutas de los cortes en la base de datos
+        imagen.axial_path = rutas_cortes['axial']
+        imagen.sagital_path = rutas_cortes['sagital']
+        imagen.coronal_path = rutas_cortes['coronal']
         imagen.save()
 
         return render(request, 'imagen/reducir_imagen.html', {
             'imagen': imagen,
-            'mensaje': 'La imagen ha sido procesada y convertida a PNG.'
+            'mensaje': 'La imagen ha sido procesada y los cortes han sido generados.'
         })
 
     except Exception as e:
