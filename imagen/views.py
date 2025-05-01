@@ -61,40 +61,6 @@ def cargar_imagen(request):
     pacientes = Paciente.objects.all()
     return render(request, 'imagen/cargar_imagen.html', {'form': form, 'pacientes': pacientes})
 
-def reducir_imagen(request, paciente_id=None):
-    paciente = get_object_or_404(Paciente, id=paciente_id)
-    imagen = ImagenMedica.objects.filter(paciente=paciente).last()
-
-    if not imagen:
-        return render(request, 'imagen/reducir_imagen.html', {
-            'error': 'No se encontró ninguna imagen asociada al paciente.'
-        })
-
-    ruta_original = imagen.archivo.path
-    ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
-
-    try:
-        img = nib.load(ruta_original)
-        data = img.get_fdata()
-
-        nib.save(nib.Nifti1Image(data, img.affine), ruta_reducida)
-
-        # Guardar la imagen reducida como una nueva entrada en la base de datos
-        nueva_imagen = ImagenMedica(
-            nombre=f"{imagen.nombre}_reducida",
-            archivo=os.path.relpath(ruta_reducida, settings.MEDIA_ROOT),
-            paciente=paciente
-        )
-        nueva_imagen.save()
-
-    except Exception as e:
-        return render(request, 'imagen/reducir_imagen.html', {
-            'imagen': imagen,
-            'error': f'Error al procesar la imagen: {str(e)}'
-        })
-
-    return render(request, 'imagen/reducir_imagen.html', {'imagen': nueva_imagen})
-
 def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     # Buscar el paciente por ID o nombre
     paciente = None
@@ -125,21 +91,6 @@ def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     return render(request, 'imagen/reducir_imagen.html', {
         'error': 'No se pudo descargar la imagen.'
     })
-
-def generar_vista_previa(nii_path, slice_index=100):
-    if not os.path.exists(nii_path):
-        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
-
-    img = nib.load(nii_path)
-    data = img.get_fdata()
-    slice_data = data[:, :, slice_index] if data.ndim == 3 else data[:, :]
-
-    plt.axis('off')
-    plt.imshow(slice_data.T, cmap='gray', origin='lower')
-    buffer = BytesIO()
-    plt.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0)
-    plt.close()
-    return base64.b64encode(buffer.getvalue()).decode('utf-8')
 
 def generar_vista_3d(nii_path):
     if not os.path.exists(nii_path):
@@ -235,11 +186,15 @@ def visualizar_imagenes_paciente(request, paciente_id):
     # Crear una lista de visualizaciones con las rutas de las imágenes PNG
     visualizaciones = []
     for imagen in imagenes:
-        if imagen.archivo.name.endswith('.png'):
-            visualizaciones.append({
-                'nombre': imagen.nombre,
-                'ruta': imagen.archivo.url  # Usar la URL del archivo para mostrarlo en el HTML
-            })
+        # Verificar si la imagen tiene un directorio de imágenes procesadas
+        imagen_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', str(paciente.id), os.path.splitext(imagen.nombre)[0])
+        if os.path.exists(imagen_dir):
+            for file_name in os.listdir(imagen_dir):
+                if file_name.endswith('.png'):
+                    visualizaciones.append({
+                        'nombre': file_name,
+                        'ruta': os.path.join(settings.MEDIA_URL, 'procesadas', str(paciente.id), os.path.splitext(imagen.nombre)[0], file_name)
+                    })
 
     return render(request, 'imagen/visualizar_imagenes_paciente.html', {
         'paciente': paciente,

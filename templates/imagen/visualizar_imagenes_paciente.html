@@ -12,4 +12,7 @@
             <p>No hay imágenes disponibles para este paciente.</p>
         {% endif %}
     </div>
+    <div>
+        <a href="{% url 'descargar_imagenes_paciente' paciente.id %}" class="btn">Descargar todas las imágenes</a>
+    </div>
 </body>
