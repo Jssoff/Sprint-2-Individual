@@ -40,37 +40,23 @@ def reducir_resolucion(nii_path, output_path, target_shape=(64, 64, 64)):
 def cargar_imagen(request):
     if request.method == 'POST':
         form = ImagenMedicaForm(request.POST, request.FILES)
-        paciente_id = request.POST.get('paciente_id')  # Obtener el ID del paciente del formulario
+        paciente_id = request.POST.get('paciente_id')
         if form.is_valid() and paciente_id:
             paciente = get_object_or_404(Paciente, id=paciente_id)
             imagen = form.save(commit=False)
-            imagen.paciente = paciente  # Asociar la imagen con el paciente
-
-            # Mantener el nombre original del archivo
-            original_name = os.path.basename(imagen.archivo.name)
-            imagen.archivo.name = os.path.join('imagenes', original_name)
+            imagen.paciente = paciente
 
             # Guardar la imagen original
             imagen.save()
 
-            # Reducir la resolución de la imagen
-            ruta_original = imagen.archivo.path
-            ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
-            reducir_resolucion(ruta_original, ruta_reducida)
+            # Procesar la imagen para convertirla a PNG
+            procesar_imagen(request, imagen.id)
 
-            # Guardar la imagen reducida como una nueva entrada en la base de datos
-            nueva_imagen = ImagenMedica(
-                nombre=f"{imagen.nombre}_reducida",
-                archivo=os.path.relpath(ruta_reducida, settings.MEDIA_ROOT),
-                paciente=paciente
-            )
-            nueva_imagen.save()
-
-            return redirect('reducir_imagen', paciente_id=paciente.id)  # Redirigir con paciente_id
+            return redirect('reducir_imagen', paciente_id=paciente.id)
     else:
         form = ImagenMedicaForm()
-    
-    pacientes = Paciente.objects.all()  # Obtener todos los pacientes
+
+    pacientes = Paciente.objects.all()
     return render(request, 'imagen/cargar_imagen.html', {'form': form, 'pacientes': pacientes})
 
 def reducir_imagen(request, paciente_id=None):
