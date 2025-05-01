@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualización de Imagen Médica</title>
+</head>
+<body>
+    <h1>Imagen: {{ imagen.nombre }}</h1>
+    <div>
+        <img src="data:image/png;base64,{{ img_base64 }}" alt="Vista de la imagen NIfTI">
+    </div>
+</body>
+</html>

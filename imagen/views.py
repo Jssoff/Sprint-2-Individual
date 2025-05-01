@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse
+from django.http import FileResponse, JsonResponse
 from .forms import ImagenMedicaForm
 from .models import ImagenMedica
 from pacientes.models import Paciente  # Importar el modelo Paciente
@@ -227,3 +227,30 @@ def visualizar_imagenes_paciente(request, paciente_id):
         'paciente': paciente,
         'visualizaciones': visualizaciones
     })
+
+def visualizar_imagen(request, imagen_id):
+    # Obtener la imagen desde la base de datos
+    imagen = ImagenMedica.objects.get(id=imagen_id)
+    nifti_path = imagen.archivo.path
+
+    try:
+        # Cargar la imagen NIfTI
+        img = nib.load(nifti_path)
+
+        # Generar la vista interactiva con Nilearn
+        display = plotting.view_img(img, title=imagen.nombre)
+
+        # Convertir la vista a base64
+        buffer = BytesIO()
+        display.savefig(buffer, format='png')
+        buffer.seek(0)
+        img_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+
+        # Pasar la imagen al frontend
+        return render(request, 'imagen/visualizar_imagen.html', {
+            'imagen': imagen,
+            'img_base64': img_base64
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
