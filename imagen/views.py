@@ -268,9 +268,12 @@ def visualizar_imagen(request, imagen_id):
     nifti_path = imagen.archivo.path
 
     try:
-        # Cargar la imagen NIfTI
+        # Verificar si el archivo existe y es válido
         img = nib.load(nifti_path)
         data = img.get_fdata()
+
+        if data.size == 0:
+            raise ValueError("El archivo NIfTI no contiene datos válidos.")
 
         # Seleccionar un corte en el eje Z (por ejemplo, el corte central)
         slice_index = data.shape[2] // 2
@@ -292,8 +295,15 @@ def visualizar_imagen(request, imagen_id):
             'img_base64': img_base64
         })
 
+    except FileNotFoundError:
+        error_message = "El archivo no se encontró. Por favor, verifica que el archivo exista."
+    except ValueError as ve:
+        error_message = f"Error en el archivo: {str(ve)}"
     except Exception as e:
-        return render(request, 'imagen/visualizar_imagen.html', {
-            'imagen': imagen,
-            'error': f"Error al procesar el archivo: {str(e)}"
-        })
+        error_message = f"Error al procesar el archivo: {str(e)}"
+
+    # Mostrar un mensaje de error en el HTML
+    return render(request, 'imagen/visualizar_imagen.html', {
+        'imagen': imagen,
+        'error': error_message
+    })
