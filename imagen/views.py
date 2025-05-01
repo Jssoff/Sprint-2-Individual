@@ -239,6 +239,16 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 'ruta': imagen.archivo.url  # Usar la URL del archivo para mostrarlo en el HTML
             })
 
+        # Agregar vistas adicionales si existen
+        base_name = os.path.splitext(imagen.archivo.name)[0]
+        for view in ['_axial.png', '_sagittal.png', '_coronal.png']:
+            view_path = os.path.join(settings.MEDIA_URL, f"{base_name}{view}")
+            if os.path.exists(os.path.join(settings.MEDIA_ROOT, f"{base_name}{view}")):
+                visualizaciones.append({
+                    'nombre': f"{imagen.nombre} {view.split('_')[1].split('.')[0].capitalize()}",
+                    'ruta': view_path
+                })
+
     return render(request, 'imagen/visualizar_imagenes_paciente.html', {
         'paciente': paciente,
         'visualizaciones': visualizaciones
@@ -311,28 +321,32 @@ def procesar_imagen(request, imagen_id):
         img = nib.load(nifti_path)
         data = img.get_fdata()
 
-        # Seleccionar un corte en el eje Z (por ejemplo, el corte central)
-        slice_index = data.shape[2] // 2
-        slice_data = data[:, :, slice_index]
-
-        # Crear una imagen PNG del corte
+        # Crear múltiples imágenes PNG de cortes axiales, sagitales y coronales
         output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas')
         os.makedirs(output_dir, exist_ok=True)
-        png_path = os.path.join(output_dir, f"{os.path.splitext(imagen.nombre)[0]}.png")
+        base_name = os.path.splitext(imagen.nombre)[0]
 
-        plt.figure(figsize=(6, 6))
-        plt.axis('off')
-        plt.imshow(slice_data.T, cmap='gray', origin='lower')
-        plt.savefig(png_path, bbox_inches='tight', pad_inches=0)
-        plt.close()
+        # Generar cortes axiales, sagitales y coronales
+        axial_path = os.path.join(output_dir, f"{base_name}_axial.png")
+        sagittal_path = os.path.join(output_dir, f"{base_name}_sagittal.png")
+        coronal_path = os.path.join(output_dir, f"{base_name}_coronal.png")
 
-        # Actualizar la ruta del archivo procesado en la base de datos
-        imagen.archivo.name = os.path.relpath(png_path, settings.MEDIA_ROOT)
+        plotting.plot_img(img, display_mode='z', output_file=axial_path, title="Vista Axial")
+        plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
+        plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
+
+        # Actualizar la ruta de los archivos procesados en la base de datos
+        imagen.archivo.name = os.path.relpath(axial_path, settings.MEDIA_ROOT)  # Guardar solo la vista axial como referencia principal
         imagen.save()
 
         return render(request, 'imagen/reducir_imagen.html', {
             'imagen': imagen,
-            'mensaje': 'La imagen ha sido procesada y convertida a PNG.'
+            'mensaje': 'Las imágenes han sido procesadas y convertidas a PNG.',
+            'imagenes_generadas': [
+                os.path.relpath(axial_path, settings.MEDIA_ROOT),
+                os.path.relpath(sagittal_path, settings.MEDIA_ROOT),
+                os.path.relpath(coronal_path, settings.MEDIA_ROOT)
+            ]
         })
 
     except Exception as e:

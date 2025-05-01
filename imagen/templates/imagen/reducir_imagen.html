@@ -60,13 +60,18 @@
                 <p>Paciente Asociado: {{ imagen.paciente }}</p>
                 <a href="{% url 'descargar_imagen' paciente_id=imagen.paciente.id %}" class="btn">Descargar Imagen</a>
                 <a href="{% url 'visualizar_imagenes' paciente_id=imagen.paciente.id %}" class="btn">Ver todas las imágenes</a>
+                <h3>Imágenes Generadas:</h3>
+                <ul>
+                    {% for img_path in imagenes_generadas %}
+                        <li><a href="{{ MEDIA_URL }}{{ img_path }}" download>Descargar {{ img_path }}</a></li>
+                    {% endfor %}
+                </ul>
             </div>
         {% else %}
             <div class="no-image">
                 <p>No hay imágenes cargadas.</p>
             </div>
         {% endif %}
-    
     </div>
 </body>
 </html>
