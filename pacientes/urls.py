@@ -8,7 +8,7 @@ urlpatterns = [
     path('', home, name='home'), 
     path('pacientes/', paciente_list, name='paciente_list'),
     path('paciente/historial/<int:paciente_id>/', paciente_historial, name='paciente_historial'),
-    path('health-check/', views.healthCheck),	
+    path('health/', views.healthCheck, name= 'health'),	
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
