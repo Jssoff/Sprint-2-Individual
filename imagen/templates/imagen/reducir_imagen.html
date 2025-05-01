@@ -57,8 +57,14 @@
         {% if imagen %}
             <div class="image-info">
                 <p>Imagen procesada: {{ imagen.nombre }}</p>
-                <p>Paciente Asociado: {{imagen.paciente}}</p>
-                
+                <p>Paciente Asociado: {{ imagen.paciente }}</p>
+                <a href="{% url 'descargar_imagen' paciente_id=imagen.paciente.id %}" class="btn">Descargar Imagen</a>
+                <h3>Imágenes Generadas:</h3>
+                <ul>
+                    <li><a href="{{ MEDIA_URL }}{{ imagen.vista_axial }}" download>Descargar Vista Axial</a></li>
+                    <li><a href="{{ MEDIA_URL }}{{ imagen.vista_sagital }}" download>Descargar Vista Sagital</a></li>
+                    <li><a href="{{ MEDIA_URL }}{{ imagen.vista_coronal }}" download>Descargar Vista Coronal</a></li>
+                </ul>
             </div>
         {% else %}
             <div class="no-image">
