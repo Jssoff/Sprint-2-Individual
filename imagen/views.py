@@ -269,11 +269,6 @@ def procesar_imagen(request, imagen_id):
         img = nib.load(nifti_path)
         data = img.get_fdata()
 
-        # Reducir la resolución a 10x10x10
-        target_shape = (10, 10, 10)
-        zoom_factors = [t / o for t, o in zip(target_shape, data.shape)]
-        reduced_data = zoom(data, zoom_factors, order=1)  # Interpolación lineal
-
         # Crear un directorio específico para el paciente
         paciente_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', str(imagen.paciente.id))
         os.makedirs(paciente_dir, exist_ok=True)
@@ -283,8 +278,8 @@ def procesar_imagen(request, imagen_id):
         os.makedirs(output_dir, exist_ok=True)
 
         # Generar un PNG para cada corte en el eje Z
-        for slice_index in range(reduced_data.shape[2]):
-            slice_data = reduced_data[:, :, slice_index]
+        for slice_index in range(data.shape[2]):
+            slice_data = data[:, :, slice_index]
 
             # Crear una imagen PNG del corte
             png_path = os.path.join(output_dir, f"slice_{slice_index}.png")
@@ -299,10 +294,7 @@ def procesar_imagen(request, imagen_id):
         imagen.archivo.name = os.path.relpath(output_dir, settings.MEDIA_ROOT)
         imagen.save()
 
-        return render(request, 'imagen/reducir_imagen.html', {
-            'imagen': imagen,
-            'mensaje': 'La imagen ha sido procesada y reducida a 10x10x10.'
-        })
+        return redirect('reducir_imagen', paciente_id=imagen.paciente.id)
 
     except Exception as e:
         return render(request, 'imagen/reducir_imagen.html', {
