@@ -16,6 +16,8 @@ from nilearn import plotting, image
 from nilearn.image import resample_img
 import warnings
 import logging
+from scipy.ndimage import zoom
+import zipfile
 
 # Configurar el logger
 logging.basicConfig(level=logging.DEBUG)
@@ -301,6 +303,7 @@ def visualizar_imagen(request, imagen_id):
         'imagen': imagen,
         'error': error_message
     })
+
 def procesar_imagen(request, imagen_id):
     # Obtener la imagen desde la base de datos
     imagen = get_object_or_404(ImagenMedica, id=imagen_id)
@@ -311,13 +314,22 @@ def procesar_imagen(request, imagen_id):
         img = nib.load(nifti_path)
         data = img.get_fdata()
 
-        # Crear un directorio para almacenar los cortes procesados
-        output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', os.path.splitext(imagen.nombre)[0])
+        # Reducir la resolución a 10x10x10
+        target_shape = (10, 10, 10)
+        zoom_factors = [t / o for t, o in zip(target_shape, data.shape)]
+        reduced_data = zoom(data, zoom_factors, order=1)  # Interpolación lineal
+
+        # Crear un directorio específico para el paciente
+        paciente_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', str(imagen.paciente.id))
+        os.makedirs(paciente_dir, exist_ok=True)
+
+        # Crear un subdirectorio para la imagen procesada
+        output_dir = os.path.join(paciente_dir, os.path.splitext(imagen.nombre)[0])
         os.makedirs(output_dir, exist_ok=True)
 
         # Generar un PNG para cada corte en el eje Z
-        for slice_index in range(data.shape[2]):
-            slice_data = data[:, :, slice_index]
+        for slice_index in range(reduced_data.shape[2]):
+            slice_data = reduced_data[:, :, slice_index]
 
             # Crear una imagen PNG del corte
             png_path = os.path.join(output_dir, f"slice_{slice_index}.png")
@@ -334,7 +346,7 @@ def procesar_imagen(request, imagen_id):
 
         return render(request, 'imagen/reducir_imagen.html', {
             'imagen': imagen,
-            'mensaje': 'La imagen ha sido procesada y convertida a múltiples PNGs.'
+            'mensaje': 'La imagen ha sido procesada y reducida a 10x10x10.'
         })
 
     except Exception as e:
@@ -342,6 +354,32 @@ def procesar_imagen(request, imagen_id):
             'imagen': imagen,
             'error': f"Error al procesar la imagen: {str(e)}"
         })
+
+def descargar_imagenes_paciente(request, paciente_id):
+    # Obtener el paciente desde la base de datos
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+
+    # Directorio donde se almacenan las imágenes procesadas del paciente
+    paciente_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas', str(paciente.id))
+
+    if not os.path.exists(paciente_dir):
+        return render(request, 'imagen/reducir_imagen.html', {
+            'error': 'No se encontraron imágenes procesadas para este paciente.'
+        })
+
+    # Crear un archivo ZIP con todas las imágenes PNG
+    zip_path = os.path.join(paciente_dir, f"imagenes_paciente_{paciente.id}.zip")
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for root, _, files in os.walk(paciente_dir):
+            for file in files:
+                if file.endswith('.png'):
+                    file_path = os.path.join(root, file)
+                    zipf.write(file_path, os.path.relpath(file_path, paciente_dir))
+
+    # Descargar el archivo ZIP
+    with open(zip_path, 'rb') as f:
+        response = FileResponse(f, as_attachment=True, filename=f"imagenes_paciente_{paciente.id}.zip")
+        return response
 
 def mostrar_imagen(request, imagen_id):
     # Obtener la imagen desde la base de datos
