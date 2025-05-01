@@ -196,6 +196,13 @@ def visualizar_imagenes_paciente(request, paciente_id):
         if imagen.archivo.name.endswith('.nii') or imagen.archivo.name.endswith('.nii.gz'):
             nifti_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
 
+            if not os.path.exists(nifti_path):
+                visualizaciones.append({
+                    'nombre': imagen.nombre,
+                    'error': f"El archivo {imagen.archivo.name} no existe o no se puede acceder."
+                })
+                continue
+
             try:
                 # Cargar la imagen NIfTI
                 img = image.load_img(nifti_path)
