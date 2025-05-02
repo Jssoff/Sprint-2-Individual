@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from imagen.models import ImagenMedica
 from pacientes.models import Paciente
@@ -288,3 +289,5 @@ def mostrar_imagen(request, imagen_id):
 def seleccionar_paciente(request):
     pacientes = Paciente.objects.all()
     return render(request, 'diagnostico/seleccionar_paciente.html', {'pacientes': pacientes})
+def healthCheck(request):
+    return HttpResponse('ok')
