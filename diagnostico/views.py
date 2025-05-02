@@ -21,6 +21,105 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+def generar_vista_previa(nii_path, slice_index=100):
+    if not os.path.exists(nii_path):
+        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
+
+    img = nib.load(nii_path)
+    data = img.get_fdata()
+    slice_data = data[:, :, slice_index] if data.ndim == 3 else data[:, :]
+
+    plt.axis('off')
+    plt.imshow(slice_data.T, cmap='gray', origin='lower')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0)
+    plt.close()
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+def generar_vista_3d(nii_path):
+    if not os.path.exists(nii_path):
+        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
+
+    img = nib.load(nii_path)
+    data = img.get_fdata()
+
+   
+
+    # Crear coordenadas espaciales para los ejes x, y, z
+    x, y, z = np.mgrid[0:data.shape[0], 0:data.shape[1], 0:data.shape[2]]
+
+    # Crear una visualización 3D interactiva con Plotly
+    fig = go.Figure(data=go.Volume(
+        x=x.flatten(),
+        y=y.flatten(),
+        z=z.flatten(),
+        value=data.flatten(),
+        opacity=0.1,  # Transparencia
+        surface_count=20  # Número de superficies
+    ))
+
+    # Guardar la visualización como un archivo HTML
+    output_path = os.path.splitext(nii_path)[0] + '_3d.html'
+    fig.write_html(output_path)
+    return output_path
+
+def generar_vistas_2d(nii_path):
+    if not os.path.exists(nii_path):
+        raise FileNotFoundError(f"El archivo {nii_path} no existe o no se puede acceder.")
+
+    # Cargar la imagen NIfTI
+    img = image.load_img(nii_path)
+
+    # Generar vistas axiales, sagitales y coronales
+    output_dir = os.path.dirname(nii_path)
+    base_name = os.path.splitext(os.path.basename(nii_path))[0]
+
+    axial_path = os.path.join(output_dir, f"{base_name}_axial.png")
+    sagittal_path = os.path.join(output_dir, f"{base_name}_sagittal.png")
+    coronal_path = os.path.join(output_dir, f"{base_name}_coronal.png")
+
+    # Verificar si las vistas ya existen
+    if not os.path.exists(axial_path):
+        plotting.plot_img(img, display_mode='z', output_file=axial_path, title="Vista Axial")
+    if not os.path.exists(sagittal_path):
+        plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
+    if not os.path.exists(coronal_path):
+        plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
+
+    return {
+        'axial': axial_path,
+        'sagittal': sagittal_path,
+        'coronal': coronal_path
+    }
+
+def visualizar_imagenes(request, paciente_id):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    # Obtener las últimas 6 imágenes asociadas al paciente
+    imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')[:6]
+
+    visualizaciones = []
+    for img in imagenes:
+        try:
+            # Generar vistas 2D de la imagen
+            vistas = generar_vistas_2d(img.archivo.path)
+            visualizacion = {
+                'nombre': img.nombre,
+                'vistas': vistas
+            }
+            visualizaciones.append(visualizacion)
+        except Exception as e:
+            visualizaciones.append({
+                'nombre': img.nombre,
+                'vistas': None,
+                'error': str(e)
+            })
+
+    return render(request, 'diagnostico/visualizar_imagen.html', {'visualizaciones': visualizaciones})
+
+def seleccionar_paciente(request):
+    pacientes = Paciente.objects.all()
+    return render(request, 'diagnostico/seleccionar_paciente.html', {'pacientes': pacientes})
+
 def visualizar_imagenes_paciente(request, paciente_id):
     # Obtener el paciente desde la base de datos
     paciente = get_object_or_404(Paciente, id=paciente_id)
@@ -120,6 +219,71 @@ def visualizar_imagen(request, imagen_id):
     return render(request, 'diagnostico/visualizar_imagen.html', {
         'imagen': imagen,
         'error': error_message
+    })
+def procesar_imagen(request, imagen_id):
+    # Obtener la imagen desde la base de datos
+    imagen = get_object_or_404(ImagenMedica, id=imagen_id)
+    nifti_path = imagen.archivo.path
+
+    try:
+        # Cargar la imagen NIfTI
+        img = nib.load(nifti_path)
+        data = img.get_fdata()
+
+        # Crear múltiples imágenes PNG de cortes axiales, sagitales y coronales
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas')
+        os.makedirs(output_dir, exist_ok=True)
+        base_name = os.path.splitext(imagen.nombre)[0]
+
+        # Generar cortes axiales, sagitales y coronales
+        axial_path = os.path.join(output_dir, f"{base_name}_axial.png")
+        sagittal_path = os.path.join(output_dir, f"{base_name}_sagittal.png")
+        coronal_path = os.path.join(output_dir, f"{base_name}_coronal.png")
+
+        plotting.plot_img(img, display_mode='z', output_file=axial_path, title="Vista Axial")
+        plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
+        plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
+
+        # Save the paths of the generated views in the database
+        imagen.vista_axial = os.path.relpath(axial_path, settings.MEDIA_ROOT)
+        imagen.vista_sagital = os.path.relpath(sagittal_path, settings.MEDIA_ROOT)
+        imagen.vista_coronal = os.path.relpath(coronal_path, settings.MEDIA_ROOT)
+        imagen.save()
+
+        # Actualizar la ruta de los archivos procesados en la base de datos
+        imagen.archivo.name = os.path.relpath(axial_path, settings.MEDIA_ROOT)  # Guardar solo la vista axial como referencia principal
+        imagen.save()
+
+        return render(request, 'diagnostico/reducir_imagen.html', {
+            'imagen': imagen,
+            'mensaje': 'Las imágenes han sido procesadas y convertidas a PNG.',
+            'imagenes_generadas': [
+                os.path.relpath(axial_path, settings.MEDIA_ROOT),
+                os.path.relpath(sagittal_path, settings.MEDIA_ROOT),
+                os.path.relpath(coronal_path, settings.MEDIA_ROOT)
+            ]
+        })
+
+    except Exception as e:
+        return render(request, 'diagnostico/reducir_imagen.html', {
+            'imagen': imagen,
+            'error': f"Error al procesar la imagen: {str(e)}"
+        })
+
+def mostrar_imagen(request, imagen_id):
+    # Obtener la imagen desde la base de datos
+    imagen = get_object_or_404(ImagenMedica, id=imagen_id)
+    png_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
+
+    if not os.path.exists(png_path):
+        return render(request, 'diagnostico/visualizar_imagen.html', {
+            'imagen': imagen,
+            'error': 'El archivo PNG no existe. Por favor, procese la imagen primero.'
+        })
+
+    return render(request, 'diagnostico/visualizar_imagen.html', {
+        'imagen': imagen,
+        'png_path': os.path.relpath(png_path, settings.MEDIA_ROOT)
     })
 def seleccionar_paciente(request):
     pacientes = Paciente.objects.all()
