@@ -217,11 +217,11 @@ def visualizar_imagenes(request, paciente_id):
                 'error': str(e)
             })
 
-    return render(request, 'imagen/visualizar_imagen.html', {'visualizaciones': visualizaciones})
+    return render(request, 'diagnostico/visualizar_imagen.html', {'visualizaciones': visualizaciones})
 
 def seleccionar_paciente(request):
     pacientes = Paciente.objects.all()
-    return render(request, 'imagen/seleccionar_paciente.html', {'pacientes': pacientes})
+    return render(request, 'diagnostico/seleccionar_paciente.html', {'pacientes': pacientes})
 
 def visualizar_imagenes_paciente(request, paciente_id):
     # Obtener el paciente desde la base de datos
@@ -261,7 +261,7 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 'ruta': imagen.vista_coronal.url
             })
 
-    return render(request, 'imagen/visualizar_imagenes_paciente.html', {
+    return render(request, 'diagnostico/visualizar_imagenes_paciente.html', {
         'paciente': paciente,
         'visualizaciones': visualizaciones
     })
@@ -303,7 +303,7 @@ def visualizar_imagen(request, imagen_id):
         logger.debug("Imagen PNG generada correctamente.")
 
         # Pasar la imagen al frontend
-        return render(request, 'imagen/visualizar_imagen.html', {
+        return render(request, 'diagnostico/visualizar_imagen.html', {
             'imagen': imagen,
             'img_base64': img_base64
         })
@@ -319,7 +319,7 @@ def visualizar_imagen(request, imagen_id):
         logger.error(error_message)
 
     # Mostrar un mensaje de error en el HTML
-    return render(request, 'imagen/visualizar_imagen.html', {
+    return render(request, 'diagnostico/visualizar_imagen.html', {
         'imagen': imagen,
         'error': error_message
     })
@@ -357,7 +357,7 @@ def procesar_imagen(request, imagen_id):
         imagen.archivo.name = os.path.relpath(axial_path, settings.MEDIA_ROOT)  # Guardar solo la vista axial como referencia principal
         imagen.save()
 
-        return render(request, 'imagen/reducir_imagen.html', {
+        return render(request, 'diagnostico/reducir_imagen.html', {
             'imagen': imagen,
             'mensaje': 'Las imágenes han sido procesadas y convertidas a PNG.',
             'imagenes_generadas': [
@@ -368,7 +368,7 @@ def procesar_imagen(request, imagen_id):
         })
 
     except Exception as e:
-        return render(request, 'imagen/reducir_imagen.html', {
+        return render(request, 'diagnostico/reducir_imagen.html', {
             'imagen': imagen,
             'error': f"Error al procesar la imagen: {str(e)}"
         })
@@ -379,12 +379,12 @@ def mostrar_imagen(request, imagen_id):
     png_path = os.path.join(settings.MEDIA_ROOT, imagen.archivo.name)
 
     if not os.path.exists(png_path):
-        return render(request, 'imagen/visualizar_imagen.html', {
+        return render(request, 'diagnostico/visualizar_imagen.html', {
             'imagen': imagen,
             'error': 'El archivo PNG no existe. Por favor, procese la imagen primero.'
         })
 
-    return render(request, 'imagen/visualizar_imagen.html', {
+    return render(request, 'diagnostico/visualizar_imagen.html', {
         'imagen': imagen,
         'png_path': os.path.relpath(png_path, settings.MEDIA_ROOT)
     })
