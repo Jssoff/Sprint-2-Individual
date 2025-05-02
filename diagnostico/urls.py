@@ -7,3 +7,4 @@ urlpatterns = [
     path('imagen/<int:imagen_id>/', views.visualizar_imagen, name='visualizar_imagen'),
 
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
