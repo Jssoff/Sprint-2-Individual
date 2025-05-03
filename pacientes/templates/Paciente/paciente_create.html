@@ -1,0 +1,11 @@
+<!-- pacientes/templates/Paciente/paciente_create.html -->
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <h2>Crear nuevo paciente</h2>
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar paciente</button>
+  </form>
+{% endblock %}

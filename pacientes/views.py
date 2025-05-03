@@ -1,7 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Paciente
 from historias_clinicas.models import HistoriaClinica
 import time
+from .forms import PacienteForm
 from django.http import HttpResponse
 
 
@@ -23,6 +24,18 @@ def paciente_historial(request, paciente_id):
         'consulta_time': consulta_time
     }
     return render(request, 'Paciente/paciente_historial.html', context)
+
+def paciente_create(request):
+    if request.method == 'POST':
+        form = PacienteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('paciente_list')  
+    else:
+        form = PacienteForm()
+
+    context = {'form': form}
+    return render(request, 'Paciente/paciente_create.html', context)
 
 def paciente_list(request):
     pacientes = Paciente.objects.all()
