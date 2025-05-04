@@ -140,7 +140,7 @@ def visualizar_imagenes_paciente(request, paciente_id):
         # Agregar vistas adicionales si existen
         base_name = os.path.splitext(imagen.archivo.name)[0]
         for view in ['_axial.png', '_sagittal.png', '_coronal.png']:
-            view_path = os.path.join(settings.MEDIA_URL, f"{base_name}{view}")
+            view_path =  f"{settings.MEDIA_URL}procesadas/{base_name}{view}"
             if os.path.exists(os.path.join(settings.MEDIA_ROOT, f"{base_name}{view}")):
                 visualizaciones.append({
                     'nombre': f"{imagen.nombre} {view.split('_')[1].split('.')[0].capitalize()}",

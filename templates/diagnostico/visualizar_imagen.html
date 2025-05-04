@@ -49,7 +49,7 @@
             {% for vis in visualizaciones %}
                 <div class="visualization-item">
                     <h3>{{ vis.nombre }}</h3>
-                    <img src="{{ vis.ruta.url }}" alt="{{ vis.nombre }}" class="image-preview">
+                    <img src="{{ vis.ruta }}" alt="{{ vis.nombre }}" class="image-preview">
                 </div>
             {% endfor %}
         {% else %}
