@@ -357,7 +357,7 @@ def procesar_imagen(request, imagen_id):
         imagen.archivo.name = os.path.relpath(axial_path, settings.MEDIA_ROOT)  # Guardar solo la vista axial como referencia principal
         imagen.save()
 
-        return render(request, 'diagnostico/reducir_imagen.html', {
+        return render(request, 'imagen/reducir_imagen.html', {
             'imagen': imagen,
             'mensaje': 'Las imágenes han sido procesadas y convertidas a PNG.',
             'imagenes_generadas': [
@@ -368,7 +368,7 @@ def procesar_imagen(request, imagen_id):
         })
 
     except Exception as e:
-        return render(request, 'diagnostico/reducir_imagen.html', {
+        return render(request, 'imagen/reducir_imagen.html', {
             'imagen': imagen,
             'error': f"Error al procesar la imagen: {str(e)}"
         })
