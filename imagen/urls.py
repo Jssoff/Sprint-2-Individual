@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('cargar/', views.cargar_imagen, name='cargar_imagen'),
@@ -9,3 +11,5 @@ urlpatterns = [
 path('visualizar_paciente/<int:paciente_id>/', views.visualizar_imagenes_paciente, name='visualizar_imagenes_paciente'),
     path('imagen/<int:imagen_id>/', views.visualizar_imagen, name='visualizar_imagen'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
