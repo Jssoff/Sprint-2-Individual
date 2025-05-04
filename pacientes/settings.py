@@ -70,7 +70,7 @@ DATABASES = {
         'NAME': 'pacientes_db',
         'USER': 'azurlitos',
         'PASSWORD': 'azurlitos',
-        'HOST': '10.5.192.3',
+        'HOST': '10.9.0.3',
         'PORT': '',
     }
 }
@@ -104,3 +104,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CSRF_TRUSTED_ORIGINS = ['http://34.27.176.71:8000']
