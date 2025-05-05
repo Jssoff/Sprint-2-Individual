@@ -93,12 +93,12 @@
         </div>
     {% endif %}
 
-    <div class="grid-container">
+    <div class="image-gallery">
         {% if visualizaciones %}
             {% for vis in visualizaciones %}
-                <div class="visualization-item">
-                    <h3>{{ vis.nombre }}</h3>
-                    <img src="{{ vis.ruta }}" alt="{{ vis.nombre }}" class="image-preview">
+                <div class="image-item">
+                    <img src="{{ vis.ruta }}" alt="{{ vis.nombre }}">
+                    <div class="image-caption">{{ vis.nombre }}</div>
                 </div>
             {% endfor %}
         {% else %}

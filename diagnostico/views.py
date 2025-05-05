@@ -162,6 +162,14 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 'ruta': imagen.vista_coronal.url
             })
 
+    # Ensure resultados_ia is passed correctly to the template
+    if request.method == 'POST' and 'analizar' in request.POST:
+        model_path = os.path.join(settings.MEDIA_ROOT, 'modelos', 'modelo_epilepsia.h5')
+        if os.path.exists(model_path):
+            resultados_ia = analyze_images_with_model(paciente_id, model_path)
+        else:
+            resultados_ia = [{'error': 'El modelo entrenado no se encuentra. Por favor, entrene el modelo primero.'}]
+
     return render(request, 'diagnostico/visualizar_imagenes_paciente.html', {
         'paciente': paciente,
         'visualizaciones': visualizaciones,
