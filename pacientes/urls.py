@@ -17,5 +17,6 @@ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += [
     path('imagen/', include('imagen.urls')),  # Incluir las rutas del componente de imagen
     path('diagnostico/', include('diagnostico.urls')),
+    path('historias/', include('historias_clinicas.urls')),
 
 ]
