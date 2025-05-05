@@ -23,4 +23,4 @@ def crear_historia(request, paciente_id):
     else:
         form = HistoriaUsuarioForm()
 
-    return render(request, 'Paciente/crear_historia.html', {'form': form, 'paciente': paciente})
+    return render(request, 'historias/create_historial.html', {'form': form, 'paciente': paciente})
