@@ -221,7 +221,55 @@ def visualizar_imagen(request, imagen_id):
         'imagen': imagen,
         'error': error_message
     })
+def procesar_imagen(request, imagen_id):
+    # Obtener la imagen desde la base de datos
+    imagen = get_object_or_404(ImagenMedica, id=imagen_id)
+    nifti_path = imagen.archivo.path
 
+    try:
+        # Cargar la imagen NIfTI
+        img = nib.load(nifti_path)
+        data = img.get_fdata()
+
+        # Crear múltiples imágenes PNG de cortes axiales, sagitales y coronales
+        output_dir = os.path.join(settings.MEDIA_ROOT, 'procesadas')
+        os.makedirs(output_dir, exist_ok=True)
+        base_name = os.path.splitext(imagen.nombre)[0]
+
+        # Generar cortes axiales, sagitales y coronales
+        axial_path = os.path.join(output_dir, f"{base_name}_axial.png")
+        sagittal_path = os.path.join(output_dir, f"{base_name}_sagittal.png")
+        coronal_path = os.path.join(output_dir, f"{base_name}_coronal.png")
+
+        plotting.plot_img(img, display_mode='z', output_file=axial_path, title="Vista Axial")
+        plotting.plot_img(img, display_mode='x', output_file=sagittal_path, title="Vista Sagital")
+        plotting.plot_img(img, display_mode='y', output_file=coronal_path, title="Vista Coronal")
+
+        # Save the paths of the generated views in the database
+        imagen.vista_axial = os.path.relpath(axial_path, settings.MEDIA_ROOT)
+        imagen.vista_sagital = os.path.relpath(sagittal_path, settings.MEDIA_ROOT)
+        imagen.vista_coronal = os.path.relpath(coronal_path, settings.MEDIA_ROOT)
+        imagen.save()
+
+        # Actualizar la ruta de los archivos procesados en la base de datos
+        imagen.archivo.name = os.path.relpath(axial_path, settings.MEDIA_ROOT)  # Guardar solo la vista axial como referencia principal
+        imagen.save()
+
+        return render(request, 'diagnostico/reducir_imagen.html', {
+            'imagen': imagen,
+            'mensaje': 'Las imágenes han sido procesadas y convertidas a PNG.',
+            'imagenes_generadas': [
+                os.path.relpath(axial_path, settings.MEDIA_ROOT),
+                os.path.relpath(sagittal_path, settings.MEDIA_ROOT),
+                os.path.relpath(coronal_path, settings.MEDIA_ROOT)
+            ]
+        })
+
+    except Exception as e:
+        return render(request, 'diagnostico/reducir_imagen.html', {
+            'imagen': imagen,
+            'error': f"Error al procesar la imagen: {str(e)}"
+        })
 
 def mostrar_imagen(request, imagen_id):
     # Obtener la imagen desde la base de datos
