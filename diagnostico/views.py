@@ -125,6 +125,9 @@ def visualizar_imagenes_paciente(request, paciente_id):
     # Obtener el paciente desde la base de datos
     paciente = get_object_or_404(Paciente, id=paciente_id)
 
+    # Inicializar resultados_ia como una lista vacía para solicitudes GET
+    resultados_ia = []
+
     # Recuperar todas las imágenes asociadas al paciente
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')
 
