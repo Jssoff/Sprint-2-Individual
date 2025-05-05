@@ -2,7 +2,7 @@ import os
 import numpy as np
 import nibabel as nib
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Conv3D, MaxPooling3D, Flatten, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
@@ -82,3 +82,42 @@ def train_model(data_dir, model_save_path):
     # Guardar el modelo entrenado
     model.save(model_save_path)
     print(f"Modelo guardado en {model_save_path}")
+
+def analyze_images_with_model(patient_id, model_path):
+    """
+    Analiza las imágenes asociadas a un paciente utilizando un modelo de IA entrenado.
+    """
+    from .models import ImagenMedica
+
+    # Cargar el modelo entrenado
+    model = load_model(model_path)
+
+    # Obtener las imágenes del paciente
+    images = []
+    imagenes = ImagenMedica.objects.filter(paciente_id=patient_id)
+
+    for imagen in imagenes:
+        try:
+            # Cargar la imagen desde el archivo asociado
+            img = nib.load(imagen.archivo.path).get_fdata()
+            img = np.expand_dims(img, axis=-1)  # Añadir canal para imágenes 3D
+            img = (img - np.min(img)) / (np.max(img) - np.min(img))  # Normalizar
+            images.append(img)
+        except Exception as e:
+            print(f"Error al cargar la imagen {imagen.archivo.path}: {e}")
+
+    images = np.array(images, dtype=np.float32)
+
+    # Realizar predicciones
+    predictions = model.predict(images)
+
+    # Asociar resultados con las imágenes
+    results = []
+    for imagen, prediction in zip(imagenes, predictions):
+        results.append({
+            'imagen': imagen,
+            'prediccion': 'Epilepsia' if prediction[0] > 0.5 else 'No Epilepsia',
+            'probabilidad': prediction[0]
+        })
+
+    return results

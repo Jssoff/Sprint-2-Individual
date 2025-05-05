@@ -2,7 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from imagen.models import ImagenMedica
 from pacientes.models import Paciente
-from imagen.logic import train_model
+from imagen.logic import train_model, analyze_images_with_model
 
 import nibabel as nib
 import numpy as np
@@ -305,5 +305,24 @@ def entrenar_modelo_diagnostico(request):
         train_model(data_dir=None, model_save_path=model_save_path)
 
         return JsonResponse({"mensaje": "Modelo entrenado exitosamente", "ruta_modelo": model_save_path})
+    except Exception as e:
+        return JsonResponse({"error": str(e)})
+
+def analizar_imagenes_paciente(request, paciente_id):
+    """
+    Vista para analizar las imágenes de un paciente utilizando el modelo de IA entrenado.
+    """
+    try:
+        # Ruta del modelo entrenado
+        model_path = os.path.join('media', 'modelos', 'modelo_epilepsia.h5')
+
+        # Verificar si el modelo existe
+        if not os.path.exists(model_path):
+            return JsonResponse({"error": "El modelo entrenado no se encuentra. Por favor, entrene el modelo primero."})
+
+        # Analizar las imágenes del paciente
+        resultados = analyze_images_with_model(paciente_id, model_path)
+
+        return JsonResponse({"resultados": resultados})
     except Exception as e:
         return JsonResponse({"error": str(e)})
