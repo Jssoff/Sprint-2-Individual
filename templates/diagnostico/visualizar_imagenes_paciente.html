@@ -11,48 +11,113 @@
         color: #4CAF50;
         margin-bottom: 20px;
     }
-    .image-gallery {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 20px;
+        padding: 20px;
     }
-    .image-item {
-        position: relative;
-        overflow: hidden;
+    .visualization-item {
+        background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s ease-in-out;
-    }
-    .image-item img {
-        display: block;
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-    }
-    .image-item:hover {
-        transform: scale(1.05);
-    }
-    .image-caption {
-        position: absolute;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        color: #fff;
-        width: 100%;
+        overflow: hidden;
         text-align: center;
         padding: 10px;
-        font-size: 1rem;
+    }
+    .visualization-item h3 {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .visualization-item img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .visualization-item img:hover {
+        transform: scale(1.1);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-content {
+        margin: auto;
+        display: block;
+        max-width: 80%;
+        max-height: 80%;
+    }
+
+    .modal-content img {
+        width: 100%;
+        height: auto;
+    }
+
+    .close {
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .no-images {
+        text-align: center;
+        color: #999;
+        font-size: 1.2rem;
     }
 </style>
 
+<script>
+    function analizarImagenes(pacienteId) {
+        fetch(`/analizar-imagenes/${pacienteId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                } else {
+                    let resultsContainer = document.getElementById('analysis-results');
+                    resultsContainer.innerHTML = '';
+                    data.resultados.forEach(result => {
+                        let resultItem = document.createElement('div');
+                        resultItem.className = 'visualization-item';
+                        resultItem.innerHTML = `
+                            <h3>${result.imagen.nombre}</h3>
+                            <p>Predicción: ${result.prediccion}</p>
+                            <p>Probabilidad: ${(result.probabilidad * 100).toFixed(2)}%</p>
+                        `;
+                        resultsContainer.appendChild(resultItem);
+                    });
+                }
+            })
+            .catch(error => alert(`Error al analizar imágenes: ${error}`));
+    }
+</script>
+
 <body>
     <h1>Imágenes del Paciente: {{ paciente.nombre }}</h1>
-    <div class="image-gallery">
+    <button onclick="analizarImagenes( paciente.id )" style="margin: 20px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Analizar Imágenes con IA</button>
+    <div id="analysis-results" class="grid-container"></div>
+    <div class="grid-container">
         {% if visualizaciones %}
             {% for vis in visualizaciones %}
-                <div class="image-item">
-                    <img src="{{ vis.ruta }}" alt="{{ vis.nombre }}">
-                    <div class="image-caption">{{ vis.nombre }}</div>
+                <div class="visualization-item">
+                    <h3>{{ vis.nombre }}</h3>
+                    <img src="{{ vis.ruta }}" alt="{{ vis.nombre }}" class="image-preview">
                 </div>
             {% endfor %}
         {% else %}
