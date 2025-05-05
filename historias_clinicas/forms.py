@@ -1,7 +1,7 @@
 from django import forms
-from .models import HistoriaUsuario
+from .models import HistoriaClinica
 
 class HistoriaUsuarioForm(forms.ModelForm):
     class Meta:
-        model = HistoriaUsuario
+        model = HistoriaClinica
         fields = ['descripcion', 'tipo_historia', 'fecha']

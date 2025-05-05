@@ -1,11 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import HistoriaUsuario, HistoriaClinica
+from .models import  HistoriaClinica
 from .forms import HistoriaUsuarioForm
 from pacientes.models import Paciente
 
 def historia_list(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
-    historias = HistoriaUsuario.objects.filter(paciente=paciente)
+    historias = HistoriaClinica.objects.filter(paciente=paciente)
     context = {'historial_list': historias, 'paciente': paciente}
     return render(request, 'HistoriasUsuario/historias.html', context)
 
