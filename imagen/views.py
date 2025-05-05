@@ -197,25 +197,15 @@ def generar_vistas_2d(nii_path):
 
 def visualizar_imagenes(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
-    # Obtener las últimas 6 imágenes asociadas al paciente
+    # Obtener las últimas 6 imágenes asociadas al paciente desde la base de datos
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')[:6]
 
     visualizaciones = []
     for img in imagenes:
-        try:
-            # Generar vistas 2D de la imagen
-            vistas = generar_vistas_2d(img.archivo.path)
-            visualizacion = {
-                'nombre': img.nombre,
-                'vistas': vistas
-            }
-            visualizaciones.append(visualizacion)
-        except Exception as e:
-            visualizaciones.append({
-                'nombre': img.nombre,
-                'vistas': None,
-                'error': str(e)
-            })
+        visualizaciones.append({
+            'nombre': img.nombre,
+            'ruta': img.archivo.url  # Usar la URL del archivo para mostrarlo en el HTML
+        })
 
     return render(request, 'diagnostico/visualizar_imagen.html', {'visualizaciones': visualizaciones})
 
