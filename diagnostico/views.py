@@ -1,8 +1,8 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from imagen.models import ImagenMedica
 from pacientes.models import Paciente
-
+from imagen.logic import train_model
 
 import nibabel as nib
 import numpy as np
@@ -291,3 +291,19 @@ def seleccionar_paciente(request):
     return render(request, 'diagnostico/seleccionar_paciente.html', {'pacientes': pacientes})
 def healthCheck(request):
     return HttpResponse('ok')
+
+def entrenar_modelo_diagnostico(request):
+    """
+    Vista para entrenar el modelo de IA con los datos de la base de datos desde el módulo diagnóstico.
+    """
+    try:
+        # Ruta donde se guardará el modelo entrenado
+        model_save_path = os.path.join('media', 'modelos', 'modelo_epilepsia.h5')
+        os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
+
+        # Entrenar el modelo
+        train_model(data_dir=None, model_save_path=model_save_path)
+
+        return JsonResponse({"mensaje": "Modelo entrenado exitosamente", "ruta_modelo": model_save_path})
+    except Exception as e:
+        return JsonResponse({"error": str(e)})
