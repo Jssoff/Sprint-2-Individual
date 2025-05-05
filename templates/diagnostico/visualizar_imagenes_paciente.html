@@ -11,89 +11,48 @@
         color: #4CAF50;
         margin-bottom: 20px;
     }
-    .grid-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .image-gallery {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
         gap: 20px;
-        padding: 20px;
     }
-    .visualization-item {
-        background-color: #fff;
+    .image-item {
+        position: relative;
+        overflow: hidden;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        text-align: center;
-        padding: 20px; /* Increased padding for better spacing */
-        width: 100%;
-        max-width: 500px; /* Increased max width for larger cards */
-        margin: auto; /* Center the cards */
-    }
-    .visualization-item h3 {
-        font-size: 1.2rem;
-        color: #333;
-        margin-bottom: 10px;
-    }
-    .visualization-item img {
-        max-width: 100%;
-        height: 500px; /* Increased height for better visibility */
-        width: auto; /* Ensures proportional scaling */
-        border-radius: 4px;
-        cursor: pointer;
         transition: transform 0.2s ease-in-out;
     }
-
-    .visualization-item img:hover {
-        transform: scale(1.1);
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.8);
-    }
-
-    .modal-content {
-        margin: auto;
+    .image-item img {
         display: block;
-        max-width: 80%;
-        max-height: 80%;
-    }
-
-    .modal-content img {
-        width: 100%;
+        max-width: 100%;
         height: auto;
+        border-radius: 8px;
     }
-
-    .close {
+    .image-item:hover {
+        transform: scale(1.05);
+    }
+    .image-caption {
         position: absolute;
-        top: 20px;
-        right: 35px;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
         color: #fff;
-        font-size: 40px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .no-images {
+        width: 100%;
         text-align: center;
-        color: #999;
-        font-size: 1.2rem;
+        padding: 10px;
+        font-size: 1rem;
     }
 </style>
 
 <body>
     <h1>Imágenes del Paciente: {{ paciente.nombre }}</h1>
-    <div class="grid-container">
+    <div class="image-gallery">
         {% if visualizaciones %}
             {% for vis in visualizaciones %}
-                <div class="visualization-item">
-                    <h3>{{ vis.nombre }}</h3>
-                    <img src="{{ vis.ruta }}" alt="{{ vis.nombre }}" class="image-preview">
+                <div class="image-item">
+                    <img src="{{ vis.ruta }}" alt="{{ vis.nombre }}">
+                    <div class="image-caption">{{ vis.nombre }}</div>
                 </div>
             {% endfor %}
         {% else %}
