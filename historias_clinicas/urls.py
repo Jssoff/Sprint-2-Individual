@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import historia_list, historia_create, crear_historia
+from .views import historia_list, crear_historia
 
 urlpatterns = [
     path('api/historias/', historia_list, name='historia_list'),
