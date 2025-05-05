@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
+    <h2>Modificar historial</h2>
+    <form method="POST">
+      {% csrf_token %}
+      {{ form.as_p }}
     <h2>Historial Clínico de {{ paciente.nombre }}</h2>
     <p><strong>Edad:</strong> {{ paciente.edad }}</p>
     <p><strong>Tipo de Sangre:</strong> {{ paciente.tipo_sangre }}</p>
@@ -8,6 +12,8 @@
     <p><strong>Condiciones Médicas:</strong> {{ paciente.condiciones_medicas }}</p>
     <h3>Registros Médicos</h3>
 
+    <a href="{% url 'crear_historia' paciente.id %}" class="btn btn-primary">Crear Historia</a>
+    
     <table class="table table-striped">
         <thead>
             <tr>

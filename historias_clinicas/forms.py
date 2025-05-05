@@ -4,4 +4,4 @@ from .models import HistoriaUsuario
 class HistoriaUsuarioForm(forms.ModelForm):
     class Meta:
         model = HistoriaUsuario
-        fields = ['descripcion', 'tipo_historia']
+        fields = ['descripcion', 'tipo_historia', 'fecha']
