@@ -137,11 +137,11 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 'ruta': imagen.archivo.url  # Usar la URL del archivo para mostrarlo en el HTML
             })
 
-        # Agregar vistas adicionales si existen
+    # Agregar vistas adicionales si existen
         base_name = os.path.splitext(imagen.archivo.name)[0]
         for view in ['_axial.png', '_sagittal.png', '_coronal.png']:
             view_path = os.path.join(settings.MEDIA_URL, f"{base_name}{view}")
-            if os.path.exists(os.path.join(settings.MEDIA_ROOT, f"{base_name}{view}")):
+        if os.path.exists(os.path.join(settings.MEDIA_ROOT, f"{base_name}{view}")):
                 visualizaciones.append({
                     'nombre': f"{imagen.nombre} {view.split('_')[1].split('.')[0].capitalize()}",
                     'ruta': view_path
@@ -161,7 +161,8 @@ def visualizar_imagenes_paciente(request, paciente_id):
 
     return render(request, 'diagnostico/visualizar_imagenes_paciente.html', {
         'paciente': paciente,
-        'visualizaciones': visualizaciones
+        'visualizaciones': visualizaciones,
+        'resultados_ia': resultados_ia
     })
 
 def visualizar_imagen(request, imagen_id):
@@ -326,3 +327,26 @@ def analizar_imagenes_paciente(request, paciente_id):
         return JsonResponse({"resultados": resultados})
     except Exception as e:
         return JsonResponse({"error": str(e)})
+
+def analizar_imagenes_paciente_resultados(request, paciente_id):
+    """
+    Vista para analizar las imágenes de un paciente utilizando el modelo de IA entrenado
+    y mostrar los resultados del análisis.
+    """
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+
+    # Verificar si el modelo entrenado existe
+    model_path = os.path.join(settings.MEDIA_ROOT, 'modelos', 'modelo_epilepsia.h5')
+    if not os.path.exists(model_path):
+        return render(request, 'diagnostico/analizar_resultados.html', {
+            'paciente': paciente,
+            'error': 'El modelo entrenado no se encuentra. Por favor, entrene el modelo primero.'
+        })
+
+    # Analizar las imágenes del paciente
+    resultados = analyze_images_with_model(paciente_id, model_path)
+
+    return render(request, 'diagnostico/analizar_resultados.html', {
+        'paciente': paciente,
+        'resultados': resultados
+    })

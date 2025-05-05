@@ -81,7 +81,6 @@
         font-size: 1.2rem;
     }
 </style>
-
 <script>
     function analizarImagenes(pacienteId) {
         fetch(`/analizar-imagenes/${pacienteId}/`)
@@ -110,8 +109,27 @@
 
 <body>
     <h1>Imágenes del Paciente: {{ paciente.nombre }}</h1>
-    <button onclick="analizarImagenes( paciente.id )" style="margin: 20px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Analizar Imágenes con IA</button>
-    <div id="analysis-results" class="grid-container"></div>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="analizar" style="margin: 20px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Analizar Imágenes con IA</button>
+    </form>
+
+    {% if resultados_ia %}
+        <div id="analysis-results" class="grid-container">
+            {% for resultado in resultados_ia %}
+                <div class="visualization-item">
+                    {% if resultado.error %}
+                        <p>Error: {{ resultado.error }}</p>
+                    {% else %}
+                        <h3>{{ resultado.imagen.nombre }}</h3>
+                        <p>Predicción: {{ resultado.prediccion }}</p>
+                        <p>Probabilidad: {{ resultado.probabilidad|floatformat:2 }}%</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <div class="grid-container">
         {% if visualizaciones %}
             {% for vis in visualizaciones %}
