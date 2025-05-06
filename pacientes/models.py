@@ -12,7 +12,7 @@ class Paciente(models.Model):
         ('CE', 'Cédula de Extranjería')
     ]
     tipo_documento = models.CharField(max_length=2, choices=TIPO_DOCUMENTO_CHOICES, default='CC')
-    numero_documento = models.CharField(max_length=20, unique=True)
+    numero_documento = models.CharField(max_length=20, unique=True, default='123456789')
     nombre = models.CharField(max_length=255)
     edad = models.IntegerField()
     tipo_sangre = models.CharField(max_length=3, choices=TIPO_SANGRE_CHOICES, default='O+')
