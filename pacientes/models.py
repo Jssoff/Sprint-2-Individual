@@ -5,7 +5,14 @@ class Paciente(models.Model):
         ('O+', 'O+'), ('O-', 'O-'), ('A+', 'A+'), ('A-', 'A-'),
         ('B+', 'B+'), ('B-', 'B-'), ('AB+', 'AB+'), ('AB-', 'AB-')
     ]
-
+    TIPO_DOCUMENTO_CHOICES = [
+        ('RC', 'Registro Civil'),
+        ('CC', 'Cédula de Ciudadanía'),
+        ('TI', 'Tarjeta de Identidad'),
+        ('CE', 'Cédula de Extranjería')
+    ]
+    tipo_documento = models.CharField(max_length=2, choices=TIPO_DOCUMENTO_CHOICES, default='CC')
+    numero_documento = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=255)
     edad = models.IntegerField()
     tipo_sangre = models.CharField(max_length=3, choices=TIPO_SANGRE_CHOICES, default='O+')
