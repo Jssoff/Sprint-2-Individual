@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import analizar_imagen
+
 
 urlpatterns = [
     path('cargar/', views.cargar_imagen, name='cargar_imagen'),
