@@ -45,25 +45,8 @@
     }
 </style>
 
-
 <body>
     <h1>Imágenes del Paciente: {{ paciente.nombre }}</h1>
-   
-        <div id="analysis-results" class="grid-container">
-            {% for resultado in resultados_ia %}
-                <div class="visualization-item">
-                    {% if resultado.error %}
-                        <p>Error: {{ resultado.error }}</p>
-                    {% else %}
-                        <h3>{{ resultado.imagen.nombre }}</h3>
-                        <p>Predicción: {{ resultado.prediccion }}</p>
-                        <p>Probabilidad: {{ resultado.probabilidad|floatformat:2 }}%</p>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <div class="image-gallery">
         {% if visualizaciones %}
             {% for vis in visualizaciones %}
@@ -76,4 +59,4 @@
             <p class="no-images">No hay imágenes disponibles para este paciente.</p>
         {% endif %}
     </div>
-</body>
+</body> 
