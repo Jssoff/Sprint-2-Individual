@@ -1,8 +1,8 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from imagen.models import ImagenMedica
 from pacientes.models import Paciente
-from imagen.logic import train_model, analyze_images_with_model
+
 
 import nibabel as nib
 import numpy as np
@@ -125,9 +125,6 @@ def visualizar_imagenes_paciente(request, paciente_id):
     # Obtener el paciente desde la base de datos
     paciente = get_object_or_404(Paciente, id=paciente_id)
 
-    # Inicializar resultados_ia como una lista vacía para solicitudes GET
-    resultados_ia = []
-
     # Recuperar todas las imágenes asociadas al paciente
     imagenes = ImagenMedica.objects.filter(paciente=paciente).order_by('-fecha_carga')
 
@@ -140,11 +137,11 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 'ruta': imagen.archivo.url  # Usar la URL del archivo para mostrarlo en el HTML
             })
 
-    # Agregar vistas adicionales si existen
+        # Agregar vistas adicionales si existen
         base_name = os.path.splitext(imagen.archivo.name)[0]
         for view in ['_axial.png', '_sagittal.png', '_coronal.png']:
             view_path = os.path.join(settings.MEDIA_URL, f"{base_name}{view}")
-        if os.path.exists(os.path.join(settings.MEDIA_ROOT, f"{base_name}{view}")):
+            if os.path.exists(os.path.join(settings.MEDIA_ROOT, f"{base_name}{view}")):
                 visualizaciones.append({
                     'nombre': f"{imagen.nombre} {view.split('_')[1].split('.')[0].capitalize()}",
                     'ruta': view_path
@@ -162,18 +159,9 @@ def visualizar_imagenes_paciente(request, paciente_id):
                 'ruta': imagen.vista_coronal.url
             })
 
-    # Ensure resultados_ia is passed correctly to the template
-    if request.method == 'POST' and 'analizar' in request.POST:
-        model_path = os.path.join(settings.MEDIA_ROOT, 'modelos', 'modelo_epilepsia.h5')
-        if os.path.exists(model_path):
-            resultados_ia = analyze_images_with_model(paciente_id, model_path)
-        else:
-            resultados_ia = [{'error': 'El modelo entrenado no se encuentra. Por favor, entrene el modelo primero.'}]
-
     return render(request, 'diagnostico/visualizar_imagenes_paciente.html', {
         'paciente': paciente,
-        'visualizaciones': visualizaciones,
-        'resultados_ia': resultados_ia
+        'visualizaciones': visualizaciones
     })
 
 def visualizar_imagen(request, imagen_id):
@@ -303,61 +291,3 @@ def seleccionar_paciente(request):
     return render(request, 'diagnostico/seleccionar_paciente.html', {'pacientes': pacientes})
 def healthCheck(request):
     return HttpResponse('ok')
-
-def entrenar_modelo_diagnostico(request):
-    """
-    Vista para entrenar el modelo de IA con los datos de la base de datos desde el módulo diagnóstico.
-    """
-    try:
-        # Ruta donde se guardará el modelo entrenado
-        model_save_path = os.path.join('media', 'modelos', 'modelo_epilepsia.h5')
-        os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
-
-        # Entrenar el modelo
-        train_model(data_dir=None, model_save_path=model_save_path)
-
-        return JsonResponse({"mensaje": "Modelo entrenado exitosamente", "ruta_modelo": model_save_path})
-    except Exception as e:
-        return JsonResponse({"error": str(e)})
-
-def analizar_imagenes_paciente(request, paciente_id):
-    """
-    Vista para analizar las imágenes de un paciente utilizando el modelo de IA entrenado.
-    """
-    try:
-        # Ruta del modelo entrenado
-        model_path = os.path.join('media', 'modelos', 'modelo_epilepsia.h5')
-
-        # Verificar si el modelo existe
-        if not os.path.exists(model_path):
-            return JsonResponse({"error": "El modelo entrenado no se encuentra. Por favor, entrene el modelo primero."})
-
-        # Analizar las imágenes del paciente
-        resultados = analyze_images_with_model(paciente_id, model_path)
-
-        return JsonResponse({"resultados": resultados})
-    except Exception as e:
-        return JsonResponse({"error": str(e)})
-
-def analizar_imagenes_paciente_resultados(request, paciente_id):
-    """
-    Vista para analizar las imágenes de un paciente utilizando el modelo de IA entrenado
-    y mostrar los resultados del análisis.
-    """
-    paciente = get_object_or_404(Paciente, id=paciente_id)
-
-    # Verificar si el modelo entrenado existe
-    model_path = os.path.join(settings.MEDIA_ROOT, 'modelos', 'modelo_epilepsia.h5')
-    if not os.path.exists(model_path):
-        return render(request, 'diagnostico/analizar_resultados.html', {
-            'paciente': paciente,
-            'error': 'El modelo entrenado no se encuentra. Por favor, entrene el modelo primero.'
-        })
-
-    # Analizar las imágenes del paciente
-    resultados = analyze_images_with_model(paciente_id, model_path)
-
-    return render(request, 'diagnostico/analizar_resultados.html', {
-        'paciente': paciente,
-        'resultados': resultados
-    })
