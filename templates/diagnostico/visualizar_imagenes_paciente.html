@@ -44,40 +44,11 @@
         font-size: 1rem;
     }
 </style>
-<script>
-    function analizarImagenes(pacienteId) {
-        fetch(`/analizar-imagenes/${pacienteId}/`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(`Error: ${data.error}`);
-                } else {
-                    let resultsContainer = document.getElementById('analysis-results');
-                    resultsContainer.innerHTML = '';
-                    data.resultados.forEach(result => {
-                        let resultItem = document.createElement('div');
-                        resultItem.className = 'visualization-item';
-                        resultItem.innerHTML = `
-                            <h3>${result.imagen.nombre}</h3>
-                            <p>Predicción: ${result.prediccion}</p>
-                            <p>Probabilidad: ${(result.probabilidad * 100).toFixed(2)}%</p>
-                        `;
-                        resultsContainer.appendChild(resultItem);
-                    });
-                }
-            })
-            .catch(error => alert(`Error al analizar imágenes: ${error}`));
-    }
-</script>
+
 
 <body>
     <h1>Imágenes del Paciente: {{ paciente.nombre }}</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit" name="analizar" style="margin: 20px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Analizar Imágenes con IA</button>
-    </form>
-
-    {% if resultados_ia %}
+   
         <div id="analysis-results" class="grid-container">
             {% for resultado in resultados_ia %}
                 <div class="visualization-item">

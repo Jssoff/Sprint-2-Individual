@@ -16,6 +16,7 @@ from nilearn import plotting, image
 from nilearn.image import resample_img
 import warnings
 import logging
+
 # Configurar el logger
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
