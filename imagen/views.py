@@ -16,7 +16,7 @@ from nilearn import plotting, image
 from nilearn.image import resample_img
 import warnings
 import logging
-
+import torch
 # Configurar el logger
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -59,25 +59,39 @@ def cargar_imagen(request):
     pacientes = Paciente.objects.all()
     return render(request, 'imagen/cargar_imagen.html', {'form': form, 'pacientes': pacientes})
 
-def reducir_imagen(request, imagen_id):
-    """
-    Reduce la resolución de una imagen NIfTI antes de cargarla a la base de datos.
-    """
-    imagen = get_object_or_404(ImagenMedica, id=imagen_id)
+def reducir_imagen(request, paciente_id=None):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    imagen = ImagenMedica.objects.filter(paciente=paciente).last()
+
+    if not imagen:
+        return render(request, 'imagen/reducir_imagen.html', {
+            'error': 'No se encontró ninguna imagen asociada al paciente.'
+        })
+
+    ruta_original = imagen.archivo.path
+    ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
+
     try:
-        img = nib.load(imagen.archivo.path)
+        img = nib.load(ruta_original)
         data = img.get_fdata()
 
-        # Reducir la resolución a 64x64x64
-        reduced_data = data[::2, ::2, ::2]
+        nib.save(nib.Nifti1Image(data, img.affine), ruta_reducida)
 
-        # Guardar la imagen reducida temporalmente
-        reduced_path = os.path.splitext(imagen.archivo.path)[0] + '_reducida.nii'
-        nib.save(nib.Nifti1Image(reduced_data, img.affine), reduced_path)
+        # Guardar la imagen reducida como una nueva entrada en la base de datos
+        nueva_imagen = ImagenMedica(
+            nombre=f"{imagen.nombre}_reducida",
+            archivo=os.path.relpath(ruta_reducida, settings.MEDIA_ROOT),
+            paciente=paciente
+        )
+        nueva_imagen.save()
 
-        return render(request, 'imagen/reducir_imagen.html', {'imagen': imagen, 'reduced_path': reduced_path})
     except Exception as e:
-        return render(request, 'imagen/reducir_imagen.html', {'imagen': imagen, 'error': str(e)})
+        return render(request, 'imagen/reducir_imagen.html', {
+            'imagen': imagen,
+            'error': f'Error al procesar la imagen: {str(e)}'
+        })
+
+    return render(request, 'imagen/reducir_imagen.html', {'imagen': nueva_imagen})
 
 def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     # Buscar el paciente por ID o nombre
@@ -364,3 +378,57 @@ def mostrar_imagen(request, imagen_id):
         'imagen': imagen,
         'png_path': os.path.relpath(png_path, settings.MEDIA_ROOT)
     })
+def analizar_imagen_mri(imagen_path):
+    """
+    Analiza una imagen MRI utilizando el modelo de epilepsia.
+    """
+    # Ruta del modelo preentrenado
+    modelo_path = os.path.join(settings.BASE_DIR, 'modelo_epilepsia_ts.pt')
+
+    # Cargar el modelo
+    modelo = torch.load(modelo_path, map_location=torch.device('cpu'))
+    modelo.eval()
+
+    # Cargar la imagen MRI
+    img = nib.load(imagen_path)
+    data = img.get_fdata()
+
+    # Preprocesar la imagen (ajustar dimensiones y normalizar)
+    data = np.expand_dims(data, axis=0)  # Añadir dimensión de canal
+    data = torch.tensor(data, dtype=torch.float32)
+
+    # Realizar la predicción
+    with torch.no_grad():
+        salida = modelo(data)
+
+    # Interpretar los resultados
+    prediccion = torch.argmax(salida, dim=1).item()
+    probabilidad = torch.softmax(salida, dim=1).max().item()
+
+    return {
+        'prediccion': prediccion,
+        'probabilidad': probabilidad
+    }
+
+def analizar_imagen(request, imagen_id):
+    """
+    Vista para analizar una imagen MRI asociada a un paciente.
+    """
+    # Obtener la imagen desde la base de datos
+    imagen = get_object_or_404(ImagenMedica, id=imagen_id)
+    nifti_path = imagen.archivo.path
+
+    try:
+        # Analizar la imagen utilizando el modelo
+        resultados = analizar_imagen_mri(nifti_path)
+
+        return render(request, 'diagnostico/analizar_resultados.html', {
+            'imagen': imagen,
+            'resultados': resultados
+        })
+
+    except Exception as e:
+        return render(request, 'diagnostico/analizar_resultados.html', {
+            'imagen': imagen,
+            'error': f"Error al analizar la imagen: {str(e)}"
+        })
