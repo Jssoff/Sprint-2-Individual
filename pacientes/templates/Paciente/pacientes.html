@@ -21,6 +21,10 @@
                     <a href="{% url 'paciente_historial' paciente.id %}" class="btn btn-primary">
                         Ver Historial
                     </a>
+                    <form method="POST" action="{% url 'paciente_delete' paciente.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
                 </td>
             </tr>
             {% empty %}

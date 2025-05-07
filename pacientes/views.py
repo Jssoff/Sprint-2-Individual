@@ -42,5 +42,12 @@ def paciente_list(request):
     context = {'paciente_list': pacientes}
     return render(request, 'Paciente/pacientes.html', context)
 
+def paciente_delete(request, paciente_id):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    if request.method == 'POST':
+        paciente.delete()
+        return redirect('paciente_list')
+    return render(request, 'Paciente/paciente_confirm_delete.html', {'paciente': paciente})
+
 def healthCheck(request):
     return HttpResponse('ok')
