@@ -3,11 +3,13 @@ from .models import Paciente
 from historias_clinicas.models import HistoriaClinica
 import time
 from django.http import HttpResponse
+from .login import autenticacion
 
-
+@autenticacion
 def home(request):
     return render(request, 'Paciente/home.html')
 
+@autenticacion
 def paciente_historial(request, paciente_id):
     start_time = time.time()
     
@@ -24,6 +26,7 @@ def paciente_historial(request, paciente_id):
     }
     return render(request, 'Paciente/paciente_historial.html', context)
 
+@autenticacion
 def paciente_list(request):
     pacientes = Paciente.objects.all()
     context = {'paciente_list': pacientes}
