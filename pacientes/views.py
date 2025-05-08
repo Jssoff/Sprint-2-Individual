@@ -6,7 +6,9 @@ from .forms import PacienteForm
 from django.http import HttpResponse
 
 from .forms import PacienteForm
+from .login import autenticacion
 
+@autenticacion
 def home(request):
     return render(request, 'Paciente/home.html')
 

@@ -3,8 +3,10 @@ from .views import home, paciente_list, paciente_historial
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from . import login
 
 urlpatterns = [
+    path('login/', login.login_view, name='login'),
     path('', home, name='home'), 
     path('pacientes/', paciente_list, name='paciente_list'),
     path('crear/', views.paciente_create, name='paciente_create'),
