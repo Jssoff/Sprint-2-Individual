@@ -5,6 +5,7 @@ import time
 from .forms import PacienteForm
 from django.http import HttpResponse
 
+from .forms import PacienteForm
 
 def home(request):
     return render(request, 'Paciente/home.html')
@@ -45,8 +46,18 @@ def paciente_list(request):
 def paciente_delete(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     if request.method == 'POST':
-        paciente.delete()
-        return redirect('paciente_list')
+        form = PacienteForm(request.POST, instance=paciente)
+         # Verifica si el formulario es válido antes de eliminar
+         # Esto es opcional, pero puede ser útil para validar datos antes de eliminar
+        if form.is_valid():
+
+         
+         paciente.delete()
+         return redirect('paciente_list')
+        else:
+                print(form.errors)
+    else:
+            form = PacienteForm()
     return render(request, 'Paciente/paciente_confirm_delete.html', {'paciente': paciente})
 
 def healthCheck(request):
