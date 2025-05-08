@@ -1,6 +1,7 @@
 from functools import wraps
 from django.shortcuts import render, redirect 
 from .models import Paciente
+
 def autenticacion(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
@@ -9,16 +10,32 @@ def autenticacion(func):
         return func(request, *args, **kwargs)
     return wrapper
 
-USUARIOS_SIMULADOS = { 'Doctor': '123456', 'a': '987654', 'invitado': '1234' } 
+USUARIOS_SIMULADOS = { 'Doctor': {'clave':'123456', 'rol': 'Doctor'}, 'a': {'clave':'987654', 'rol': 'Paciente'}, 'Tecnico': {'clave':'1234', 'rol': 'Tecnico'}} 
 
 def login_view(request):
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
         clave = request.POST.get('clave')
         # Aquí puedes validar el usuario/clave
-        if usuario == 'admin' and clave == '1234':  # Ejemplo
+        if usuario in USUARIOS_SIMULADOS and USUARIOS_SIMULADOS[usuario]['clave']== clave:
             request.session['usuario_autenticado'] = True
             return redirect('home')
         else:
             return render(request, 'Paciente/login.html', {'error': 'Credenciales inválidas'})
     return render(request, 'Paciente/login.html')
+
+def rol_requerido(rol):
+    def decorador(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            if request.session.get('rol') == rol:
+                return func(request, *args, **kwargs)
+            return redirect('no_autorizado')
+        return wrapper
+    return decorador
+
+
+
+def logout_view(request):
+    request.session.flush()  
+    return redirect('login')

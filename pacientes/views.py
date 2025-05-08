@@ -6,12 +6,14 @@ from .forms import PacienteForm
 from django.http import HttpResponse
 
 from .forms import PacienteForm
-from .login import autenticacion
+from .login import autenticacion, rol_requerido
 
 @autenticacion
 def home(request):
     return render(request, 'Paciente/home.html')
 
+@autenticacion
+@rol_requerido('Doctor')
 def paciente_historial(request, paciente_id):
     start_time = time.time()
     
@@ -28,6 +30,8 @@ def paciente_historial(request, paciente_id):
     }
     return render(request, 'Paciente/paciente_historial.html', context)
 
+@autenticacion
+@rol_requerido('Doctor') 
 def paciente_create(request):
     if request.method == 'POST':
         form = PacienteForm(request.POST)
@@ -40,11 +44,15 @@ def paciente_create(request):
     context = {'form': form}
     return render(request, 'Paciente/paciente_create.html', context)
 
+@autenticacion
+@rol_requerido('Doctor') 
 def paciente_list(request):
     pacientes = Paciente.objects.all()
     context = {'paciente_list': pacientes}
     return render(request, 'Paciente/pacientes.html', context)
 
+@autenticacion
+@rol_requerido('Doctor') 
 def paciente_delete(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     if request.method == 'POST':

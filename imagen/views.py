@@ -16,6 +16,7 @@ from nilearn import plotting, image
 from nilearn.image import resample_img
 import warnings
 import logging
+from pacientes.login import autenticacion, rol_requerido
 
 # Configurar el logger
 logging.basicConfig(level=logging.DEBUG)
@@ -35,7 +36,8 @@ def reducir_resolucion(nii_path, output_path, target_shape=(64, 64, 64)):
 
    
     return img
-
+@autenticacion
+@rol_requerido('Tecnico') 
 @csrf_exempt  
 def cargar_imagen(request):
     if request.method == 'POST':
