@@ -29,7 +29,8 @@ def rol_requerido(rol):
     def decorador(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
-            if True:
+            usuario= request.session.get('usuario')
+            if USUARIOS_SIMULADOS[usuario]['rol'] == rol:
                 return func(request, *args, **kwargs)
             messages.error(request, "No tienes la autorizacion para acceder a esta pagina.")
             return redirect('home')

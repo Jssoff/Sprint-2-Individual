@@ -44,9 +44,8 @@ def paciente_create(request):
     context = {'form': form}
     return render(request, 'Paciente/paciente_create.html', context)
 
-
+@autenticacion 
 @rol_requerido('Doctor') 
-@autenticacion
 def paciente_list(request):
     pacientes = Paciente.objects.all()
     context = {'paciente_list': pacientes}
