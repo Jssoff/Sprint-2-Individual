@@ -9,3 +9,10 @@
     <a href="{% url 'paciente_create' %}" class="btn btn-primary">Cargar Paciente</a>
 </div>
 {% endblock %}
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}

@@ -29,10 +29,8 @@ def rol_requerido(rol):
     def decorador(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
-            print (request.session.get('rol'),rol)
             if request.session.get('rol') == rol:
                 return func(request, *args, **kwargs)
-            
             messages.error(request, "No autorizado para acceder a esta sección.")
             return redirect('home')
         return wrapper
