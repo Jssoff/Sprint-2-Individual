@@ -53,4 +53,4 @@ def registrarse(request):
             USUARIOS_SIMULADOS[usuario]= {'clave':contraseña, 'rol': rol}
             messages.success(request, "Usuario registrado con exito")
             return redirect('login')
-    return render(request, 'Paciente/registro.html')
+    return render(request, 'Paciente/registo.html')
