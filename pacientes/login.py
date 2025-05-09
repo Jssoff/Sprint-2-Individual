@@ -11,7 +11,7 @@ def autenticacion(func):
         return func(request, *args, **kwargs)
     return wrapper
 
-USUARIOS_SIMULADOS = { 'Doctor': {'clave':'123456', 'rol': 'Doctor'}, 'a': {'clave':'987654', 'rol': 'Paciente'}, 'Tecnico': {'clave':'1234', 'rol': 'Tecnico'}} 
+USUARIOS_SIMULADOS = { 'Doctor': {'clave':'123456', 'rol': 'Doctor'},'Doctor Alfredo': {'clave':'123456', 'rol': 'Doctor'}, 'Doctor Juan': {'clave':'123456', 'rol': 'Doctor'}, 'Doctor Messi': {'clave':'123456', 'rol': 'Doctor'}, 'Doctor Cristiano': {'clave':'123456', 'rol': 'Doctor'}, 'Doctor Lamine Yamal': {'clave':'123456', 'rol': 'Doctor'},'a': {'clave':'987654', 'rol': 'Paciente'}, 'Tecnico': {'clave':'1234', 'rol': 'Tecnico'}, 'Tecnico 2': {'clave':'1234', 'rol': 'Tecnico'}, 'Tecnico 3 ': {'clave':'1234', 'rol': 'Tecnico'}, 'Tecnico 4': {'clave':'1234', 'rol': 'Tecnico'}, 'Tecnico 5 ': {'clave':'1234', 'rol': 'Tecnico'}} 
 
 def login_view(request):
     if request.method == 'POST':
