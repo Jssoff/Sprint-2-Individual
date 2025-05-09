@@ -16,10 +16,15 @@
                         <a class="nav-link" href="{% url 'paciente_list' %}">Pacientes</a>
                     </li>
                     <li class="nav-item ml-auto">
-                        <a class="nav-link btn btn-outline-light text-light font-weight-bold px-4 py-2 rounded-pill shadow-sm hover-custom" href="{% url 'logout' %}">
+                        <a class="nav-link btn btn-outline-light text-light font-weight-bold px-4 py-2 rounded-pill shadow-sm" 
+                        href="{% url 'logout' %}" 
+                        style="background-color: transparent; color: #fff; border-color: #fff;" 
+                        onmouseover="this.style.backgroundColor='transparent'; this.style.color='#fff'; this.style.borderColor='#fff';" 
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#fff'; this.style.borderColor='#fff';">
                             <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                         </a>
                     </li>
+
                 </ul>
             </div>
         </div>
