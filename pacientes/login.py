@@ -1,6 +1,7 @@
 from functools import wraps
 from django.shortcuts import render, redirect 
 from .models import Paciente
+from django.contrib import messages
 
 def autenticacion(func):
     @wraps(func)
@@ -30,7 +31,8 @@ def rol_requerido(rol):
         def wrapper(request, *args, **kwargs):
             if request.session.get('rol') == rol:
                 return func(request, *args, **kwargs)
-            return redirect('no_autorizado')
+            messages.error(request, "No autorizado para acceder a esta sección.")
+            return redirect('home')
         return wrapper
     return decorador
 
