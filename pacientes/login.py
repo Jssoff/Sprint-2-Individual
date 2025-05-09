@@ -20,6 +20,7 @@ def login_view(request):
         # Aquí puedes validar el usuario/clave
         if usuario in USUARIOS_SIMULADOS and USUARIOS_SIMULADOS[usuario]['clave']== clave:
             request.session['usuario_autenticado'] = True
+            request.session['rol'] = USUARIOS_SIMULADOS[usuario]['rol']
             return redirect('home')
         else:
             return render(request, 'Paciente/login.html', {'error': 'Credenciales inválidas'})
@@ -31,7 +32,7 @@ def rol_requerido(rol):
         def wrapper(request, *args, **kwargs):
             usuario= request.session.get('usuario')
             print("Sesión actual:", request.session.items())
-            if True:
+            if request.session.get('rol')==rol:
                 return func(request, *args, **kwargs)
             messages.error(request, "No tienes la autorizacion para acceder a esta pagina.")
             return redirect('home')
