@@ -30,8 +30,6 @@ def rol_requerido(rol):
     def decorador(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
-            usuario= request.session.get('usuario')
-            print("Sesión actual:", request.session.items())
             if request.session.get('rol')==rol:
                 return func(request, *args, **kwargs)
             messages.error(request, "No tienes la autorizacion para acceder a esta pagina.")
@@ -39,8 +37,20 @@ def rol_requerido(rol):
         return wrapper
     return decorador
 
-
-
 def logout_view(request):
     request.session.flush()  
     return redirect('login')
+
+def registrarse(request):
+    if request.method == 'Post':
+        usuario= request.POST.get('usuario')
+        contraseña = request.POST.get('contraseña')
+        rol = request.POST.get ('rol')
+
+        if usuario in USUARIOS_SIMULADOS:
+            messages.error(request,"El usuario ya existe, use uno diferente")
+        else:
+            USUARIOS_SIMULADOS[usuario]= {'clave':contraseña, 'rol': rol}
+            messages.success(request, "Usuario registrado con exito")
+            return redirect('login')
+    return render(request, 'Paciente/registro.html')

@@ -7,6 +7,7 @@ from . import login
 
 urlpatterns = [
     path('login/', login.login_view, name='login'),
+    path('registro/', login.registrarse, name='registro'),
     path('logout/', login.logout_view, name='logout'),
     path('', home, name='home'), 
     path('pacientes/', paciente_list, name='paciente_list'),

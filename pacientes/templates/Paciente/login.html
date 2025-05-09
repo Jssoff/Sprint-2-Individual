@@ -156,13 +156,21 @@
             <button type="submit">Iniciar sesión</button> 
 
         </form> 
-
+ 
         {% if error %} 
 
             <div class="error-message">{{ error }}</div> 
 
         {% endif %} 
-
+        <li class="nav-item ml-auto">
+            <a class="nav-link btn btn-outline-light text-light font-weight-bold px-4 py-2 rounded-pill shadow-sm" 
+                href="{% url 'registro' %}" 
+                style="background-color: transparent; color: #fff; border-color: #fff;" 
+                onmouseover="this.style.backgroundColor='transparent'; this.style.color='#fff'; this.style.borderColor='#fff';" 
+                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#fff'; this.style.borderColor='#fff';">
+                <i class="bi bi-box-arrow-right"></i> Registrarse
+            </a>
+        </li>
     </div> 
 
 </body> 
