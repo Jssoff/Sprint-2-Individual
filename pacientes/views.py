@@ -68,7 +68,7 @@ def paciente_delete(request, paciente_id):
                 print(form.errors)
     else:
             form = PacienteForm()
-    return render(request, 'Paciente/paciente_confirm_delete.html', {'paciente': paciente})
+    return redirect('paciente_list')
 
 def healthCheck(request):
     return HttpResponse('ok')
