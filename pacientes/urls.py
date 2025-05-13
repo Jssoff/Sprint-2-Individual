@@ -16,7 +16,7 @@ urlpatterns = [
     path('paciente/eliminar/<int:paciente_id>/', views.paciente_delete, name='paciente_delete'),
 
     path('health/', views.healthCheck, name= 'health'),	
-    #path('diagnostico_IA', include('diagnostico_IA.urls')),
+    path('diagnostico_IA', include('diagnostico_IA.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

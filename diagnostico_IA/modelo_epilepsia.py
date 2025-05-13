@@ -1,5 +1,4 @@
-# diagnostico/modelo_epilepsia.py
-"""
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -28,4 +27,3 @@ class EpilepsyCNN(nn.Module):
         x = self.flatten(x)
         x = F.relu(self.fc1(x))
         return self.fc2(x)
-"""
