@@ -8,4 +8,12 @@
     <a href="{% url 'seleccionar_paciente' %}" class="btn btn-primary">Ver Imágenes</a>
     <a href="{% url 'paciente_create' %}" class="btn btn-primary">Cargar Paciente</a>
 </div>
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
 {% endblock %}
+

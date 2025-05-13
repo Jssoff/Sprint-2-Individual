@@ -1,0 +1,181 @@
+<!DOCTYPE html> 
+
+<html lang="es"> 
+
+<head> 
+
+    <meta charset="UTF-8"> 
+
+    <title>Inicio de sesión</title> 
+
+    <style> 
+
+        body { 
+
+            background: #010d3b; 
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+
+            display: flex; 
+
+            height: 100vh; 
+
+            align-items: center; 
+
+            justify-content: center; 
+
+        } 
+
+        .login-container { 
+
+            background: white; 
+
+            padding: 2rem 2.5rem; 
+
+            border-radius: 12px; 
+
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+
+            width: 100%; 
+
+            max-width: 400px; 
+
+        } 
+
+        h2 { 
+
+            text-align: center; 
+
+            color: #333; 
+
+        } 
+
+        label { 
+
+            display: block; 
+
+            margin-bottom: 0.3rem; 
+
+            font-weight: 600; 
+
+        } 
+
+        input[type="text"], 
+
+        input[type="password"] { 
+
+            width: 100%; 
+
+            padding: 0.6rem; 
+
+            margin-bottom: 1rem; 
+
+            border: 1px solid #ccc; 
+
+            border-radius: 8px; 
+
+            transition: border-color 0.3s; 
+
+        } 
+
+        input:focus { 
+
+            border-color: #007bff; 
+
+            outline: none; 
+
+        } 
+
+        button { 
+
+            width: 100%; 
+
+            padding: 0.7rem; 
+
+            background-color: #007bff; 
+
+            color: white; 
+
+            border: none; 
+
+            border-radius: 8px; 
+
+            font-size: 1rem; 
+
+            cursor: pointer; 
+
+            transition: background-color 0.3s; 
+
+        } 
+
+        button:hover { 
+
+            background-color: #0056b3; 
+
+        } 
+
+        .error-message { 
+
+            color: red; 
+
+            text-align: center; 
+
+            margin-top: 1rem; 
+
+        } 
+
+    </style> 
+    
+
+</head> 
+
+<body> 
+
+    <div class="login-container"> 
+
+        <h2>Iniciar sesión</h2> 
+
+        <form method="POST"> 
+
+            {% csrf_token %} 
+
+            <div> 
+
+                <label for="usuario">Usuario:</label> 
+
+                <input type="text" name="usuario" id="usuario" required> 
+
+            </div> 
+
+            <div> 
+
+                <label for="clave">Contraseña:</label> 
+
+                <input type="password" name="clave" id="clave" required> 
+
+            </div> 
+
+            <button type="submit">Iniciar sesión</button> 
+
+        </form> 
+ 
+        {% if error %} 
+
+            <div class="error-message">{{ error }}</div> 
+
+        {% endif %} 
+        <!--<div style="margin-top: 1rem; text-align: center;">
+            <a class="btn btn-outline-dark px-4 py-2 rounded-pill shadow-sm"
+            href="{% url 'registro' %}"
+            style="background-color: transparent; border-color: #000000; color: #000000;"
+            onmouseover="this.style.color='#ffffff'; this.style.backgroundColor='#000000';"
+            onmouseout="this.style.color='#000000'; this.style.backgroundColor='transparent';">
+                Registrarse
+            </a>
+        </div>-->
+    </div> 
+    
+
+</body> 
+
+</html> 

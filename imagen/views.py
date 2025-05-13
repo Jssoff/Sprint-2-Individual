@@ -16,6 +16,7 @@ from nilearn import plotting, image
 from nilearn.image import resample_img
 import warnings
 import logging
+from pacientes.login import autenticacion, rol_requerido
 
 # Configurar el logger
 logging.basicConfig(level=logging.DEBUG)
@@ -35,7 +36,8 @@ def reducir_resolucion(nii_path, output_path, target_shape=(64, 64, 64)):
 
    
     return img
-
+@autenticacion
+@rol_requerido('Tecnico') 
 @csrf_exempt  
 def cargar_imagen(request):
     if request.method == 'POST':
@@ -59,25 +61,39 @@ def cargar_imagen(request):
     pacientes = Paciente.objects.all()
     return render(request, 'imagen/cargar_imagen.html', {'form': form, 'pacientes': pacientes})
 
-def reducir_imagen(request, imagen_id):
-    """
-    Reduce la resolución de una imagen NIfTI antes de cargarla a la base de datos.
-    """
-    imagen = get_object_or_404(ImagenMedica, id=imagen_id)
+def reducir_imagen(request, paciente_id=None):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    imagen = ImagenMedica.objects.filter(paciente=paciente).last()
+
+    if not imagen:
+        return render(request, 'imagen/reducir_imagen.html', {
+            'error': 'No se encontró ninguna imagen asociada al paciente.'
+        })
+
+    ruta_original = imagen.archivo.path
+    ruta_reducida = os.path.splitext(ruta_original)[0] + '_reducida.nii'
+
     try:
-        img = nib.load(imagen.archivo.path)
+        img = nib.load(ruta_original)
         data = img.get_fdata()
 
-        # Reducir la resolución a 64x64x64
-        reduced_data = data[::2, ::2, ::2]
+        nib.save(nib.Nifti1Image(data, img.affine), ruta_reducida)
 
-        # Guardar la imagen reducida temporalmente
-        reduced_path = os.path.splitext(imagen.archivo.path)[0] + '_reducida.nii'
-        nib.save(nib.Nifti1Image(reduced_data, img.affine), reduced_path)
+        # Guardar la imagen reducida como una nueva entrada en la base de datos
+        nueva_imagen = ImagenMedica(
+            nombre=f"{imagen.nombre}_reducida",
+            archivo=os.path.relpath(ruta_reducida, settings.MEDIA_ROOT),
+            paciente=paciente
+        )
+        nueva_imagen.save()
 
-        return render(request, 'imagen/reducir_imagen.html', {'imagen': imagen, 'reduced_path': reduced_path})
     except Exception as e:
-        return render(request, 'imagen/reducir_imagen.html', {'imagen': imagen, 'error': str(e)})
+        return render(request, 'imagen/reducir_imagen.html', {
+            'imagen': imagen,
+            'error': f'Error al procesar la imagen: {str(e)}'
+        })
+
+    return render(request, 'imagen/reducir_imagen.html', {'imagen': nueva_imagen})
 
 def descargar_imagen(request, paciente_id=None, paciente_nombre=None):
     # Buscar el paciente por ID o nombre
