@@ -1,3 +1,4 @@
+"""
 from django.shortcuts import render
 import os
 import torch
@@ -51,3 +52,4 @@ def predecir_epilepsia(request):
         return JsonResponse({'resultado': diagnostico})
 
     return JsonResponse({'error': 'Método no permitido o archivo no enviado'}, status=400)
+"""
