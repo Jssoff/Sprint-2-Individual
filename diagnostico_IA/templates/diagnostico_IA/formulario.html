@@ -1,0 +1,15 @@
+<!-- diagnostico/templates/diagnostico/formulario.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diagnóstico de Epilepsia</title>
+</head>
+<body>
+    <h1>Subir imagen .nii para diagnóstico</h1>
+    <form action="{% url 'predecir_epilepsia' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="imagen" accept=".nii" required><br><br>
+        <button type="submit">Diagnosticar</button>
+    </form>
+</body>
+</html>
