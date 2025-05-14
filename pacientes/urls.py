@@ -16,6 +16,7 @@ urlpatterns = [
     path('paciente/eliminar/<int:paciente_id>/', views.paciente_delete, name='paciente_delete'),
 
     path('health/', views.healthCheck, name= 'health'),	
+    path('diagnostico_IA/formulario_predecir/', views.healthCheck, name= 'modelo_IA'),	
     
 ]
 
