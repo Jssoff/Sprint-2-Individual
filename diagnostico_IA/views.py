@@ -7,10 +7,12 @@ from django.http import JsonResponse
 from django.conf import settings
 from .modelo_epilepsia import EpilepsyCNN
 from pacientes import *
-from io import BytesIO 
+import tempfile
 
 def formulario_diagnostico(request):
     return render(request, 'diagnostico_IA/formulario.html')
+
+
 
 
 def predecir_epilepsia(request):
@@ -18,17 +20,22 @@ def predecir_epilepsia(request):
         archivo = request.FILES['imagen']
 
         try:
-            # ✅ Leer archivo .nii directamente desde la memoria
-            archivo_memoria = BytesIO(archivo.read())
-            imagen = nib.load(archivo_memoria)
-            data = imagen.get_fdata()
+            # ✅ Guardar archivo temporal de forma segura y automática
+            with tempfile.NamedTemporaryFile(suffix=".nii") as temp_file:
+                for chunk in archivo.chunks():
+                    temp_file.write(chunk)
+                temp_file.flush()
+
+                # ✅ Leer archivo .nii desde el archivo temporal
+                imagen = nib.load(temp_file.name)
+                data = imagen.get_fdata()
 
             # Ajustar tamaño si es necesario
-            if data.shape != (64, 64, 64):  # o el tamaño que espera tu red
+            if data.shape != (64, 64, 64):
                 from scipy.ndimage import zoom
                 data = zoom(data, (64 / data.shape[0], 64 / data.shape[1], 64 / data.shape[2]))
 
-            # Normalizar
+            # Normalizar y preparar tensor
             data = (data - np.min(data)) / (np.max(data) - np.min(data) + 1e-6)
             data = np.expand_dims(data, axis=0)  # canal
             data = np.expand_dims(data, axis=0)  # lote
