@@ -1,16 +1,65 @@
-<!-- diagnostico/templates/diagnostico/formulario.html -->
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>Diagnóstico de Epilepsia</title>
+    <style>
+        body {
+            background-color: #e8f5e9; /* Verde muy claro */
+            font-family: Arial, sans-serif;
+            color: #2e7d32; /* Verde oscuro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #1b5e20;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #388e3c;
+        }
+    </style>
 </head>
 <body>
-    <h1>Subir imagen .nii para diagnóstico</h1>
-    <form action="{% url 'predecir_epilepsia' %}" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="imagen" accept=".nii" required><br><br>
-        <button type="submit">Diagnosticar</button>
-    </form>
+    <div class="form-container">
+        <h1>Diagnóstico de Epilepsia</h1>
+        <form action="{% url 'predecir_epilepsia' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="imagen" accept=".nii" required><br>
+            <button type="submit">Diagnosticar</button>
+        </form>
+    </div>
 </body>
 </html>
