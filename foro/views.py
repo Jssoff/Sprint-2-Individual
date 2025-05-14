@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Paciente, Foro
+from pacientes.models import Paciente
+from .models import Foro
 from .forms import ForoForm, ComentarioForm
 
 @login_required

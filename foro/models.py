@@ -1,5 +1,5 @@
 from django.db import models
-from .models import Paciente  
+from pacientes.models import Paciente  
 class Foro(models.Model):
     paciente = models.ForeignKey(Paciente, related_name='foros', on_delete=models.CASCADE)
     titulo = models.CharField(max_length=255)
