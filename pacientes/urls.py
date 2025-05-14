@@ -14,16 +14,17 @@ urlpatterns = [
     path('crear/', views.paciente_create, name='paciente_create'),
     path('paciente/historial/<int:paciente_id>/', paciente_historial, name='paciente_historial'),
     path('paciente/eliminar/<int:paciente_id>/', views.paciente_delete, name='paciente_delete'),
-
-    path('health/', views.healthCheck, name= 'health'),	
+    path('health/', views.healthCheck, name= 'health'),		
+    
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [
-    path('imagen/', include('imagen.urls')),  # Incluir las rutas del componente de imagen
+    path('imagen/', include('imagen.urls')),  
     path('diagnostico/', include('diagnostico.urls')),
     path('historias/', include('historias_clinicas.urls')),
     path('foro/', include('foro.urls')),
+    path('diagnostico_IA/', include('diagnostico_IA.urls')),
 
 ]
