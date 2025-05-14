@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     'historias_clinicas',
     'imagen',
     'diagnostico',
-    'diagnostico_IA'
+    'diagnostico_IA',
+    'foro',
 ]
 
 MIDDLEWARE = [
