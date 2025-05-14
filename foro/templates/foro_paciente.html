@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Foros del paciente: {{ paciente.nombre }}</h1>
+
+  {% for foro in foros %}
+    <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px;">
+      <h2>{{ foro.titulo }}</h2>
+      <p>{{ foro.descripcion }}</p>
+      <small>Creado el: {{ foro.fecha_creacion|date:"d/m/Y H:i" }}</small>
+
+      <h3>Comentarios</h3>
+      <ul>
+        {% for comentario in foro.comentarios.all %}
+          <li>
+            <strong>{{ comentario.medico.username }}</strong> ({{ comentario.fecha_comentario|date:"d/m/Y H:i" }}):
+            <p>{{ comentario.texto }}</p>
+          </li>
+        {% empty %}
+          <li>No hay comentarios aún.</li>
+        {% endfor %}
+      </ul>
+
+      <form method="POST" style="margin-top: 10px;">
+        {% csrf_token %}
+        {{ comentario_form.as_p }}
+        <input type="hidden" name="foro_id" value="{{ foro.id }}">
+        <button type="submit" name="comentario">Agregar comentario</button>
+      </form>
+    </div>
+  {% empty %}
+    <p>No hay foros creados para este paciente.</p>
+  {% endfor %}
+
+  <a href="{% url 'crear_foro' paciente_id=paciente.id %}">Crear un nuevo foro</a>
+{% endblock %}

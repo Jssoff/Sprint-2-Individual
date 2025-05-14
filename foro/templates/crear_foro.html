@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Crear Foro para {{ paciente.nombre }}</h1>
+
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Crear Foro</button>
+  </form>
+
+  <br>
+  <a href="{% url 'foro_paciente' paciente_id=paciente.id %}">Volver a los foros</a>
+{% endblock %}

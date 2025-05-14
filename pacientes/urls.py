@@ -24,5 +24,6 @@ urlpatterns += [
     path('imagen/', include('imagen.urls')),  # Incluir las rutas del componente de imagen
     path('diagnostico/', include('diagnostico.urls')),
     path('historias/', include('historias_clinicas.urls')),
+    path('foro/', include('foro.urls')),
 
 ]
