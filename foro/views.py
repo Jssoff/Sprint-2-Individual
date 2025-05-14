@@ -4,7 +4,6 @@ from pacientes.models import Paciente
 from .models import Foro
 from .forms import ForoForm, ComentarioForm
 
-@login_required
 def foro_paciente(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     foros = Foro.objects.filter(paciente=paciente).order_by('-fecha_creacion')
@@ -13,7 +12,7 @@ def foro_paciente(request, paciente_id):
         comentario_form = ComentarioForm(request.POST)
         if comentario_form.is_valid():
             comentario = comentario_form.save(commit=False)
-            comentario.medico = request.session.get('usuario') 
+            comentario.medico = request.POST.get('usuario') 
             
             foro_id = request.POST.get('foro_id')
             comentario.foro = get_object_or_404(Foro, id=foro_id)
@@ -28,7 +27,7 @@ def foro_paciente(request, paciente_id):
         'comentario_form': comentario_form,
     })
 
-@login_required
+
 def crear_foro(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
 
