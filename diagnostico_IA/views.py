@@ -8,6 +8,7 @@ from django.conf import settings
 from .modelo_epilepsia import EpilepsyCNN
 from pacientes import *
 import tempfile
+import os
 
 def formulario_diagnostico(request):
     return render(request, 'diagnostico_IA/formulario.html')
