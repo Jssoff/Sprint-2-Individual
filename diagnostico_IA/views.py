@@ -7,6 +7,7 @@ import numpy as np
 from django.http import JsonResponse
 from django.conf import settings
 from .modelo_epilepsia import EpilepsyCNN
+from pacientes import *
 
 
 def formulario_diagnostico(request):
