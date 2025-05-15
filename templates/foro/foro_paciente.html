@@ -13,7 +13,7 @@
       <ul>
         {% for comentario in foro.comentarios.all %}
           <li>
-            <strong>{{ comentario.medico.username }}</strong> ({{ comentario.fecha_comentario|date:"d/m/Y H:i" }}):
+            <strong>{{ comentario.medico }}</strong> ({{ comentario.fecha_comentario|date:"d/m/Y H:i" }}):
             <p>{{ comentario.texto }}</p>
           </li>
         {% empty %}
