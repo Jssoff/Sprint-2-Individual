@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultado del Diagnóstico</title>
+    <style>
+        body {
+            text-align: center;
+            padding: 30px;
+            background-color: #f1f8e9;
+            font-family: Arial, sans-serif;
+        }
+        .resultado {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            background-color: #e8f5e9;
+            border: 2px solid #4caf50;
+            color: #2e7d32;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .imagen-preview {
+            max-width: 400px;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .boton-volver {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Resultado del Diagnóstico</h1>
+
+    {% if diagnostico %}
+        <div class="resultado">
+            Diagnóstico: {{ diagnostico }}
+        </div>
+    {% elif error %}
+        <div class="error">
+            Error: {{ error }}
+        </div>
+    {% endif %}
+
+    {% if imagen_base64 %}
+        <div>
+            <h3>Vista previa de la imagen analizada:</h3>
+            <img src="data:image/png;base64,{{ imagen_base64 }}" alt="Imagen .nii procesada" class="imagen-preview">
+        </div>
+    {% endif %}
+
+    <br>
+    <a href="{% url 'modelo_IA' %}" class="boton-volver">Volver</a>
+
+</body>
+</html>

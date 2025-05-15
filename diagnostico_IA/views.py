@@ -3,15 +3,20 @@ from django.shortcuts import render
 import torch
 import nibabel as nib
 import numpy as np
-from django.http import JsonResponse
 from django.conf import settings
 from .modelo_epilepsia import EpilepsyCNN
 from pacientes import *
 import tempfile
 import os
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
 
 def formulario_diagnostico(request):
     return render(request, 'diagnostico_IA/formulario.html')
+
+
+
 
 
 
@@ -21,25 +26,23 @@ def predecir_epilepsia(request):
         archivo = request.FILES['imagen']
 
         try:
-            # ✅ Guardar archivo temporal de forma segura y automática
             with tempfile.NamedTemporaryFile(suffix=".nii") as temp_file:
                 for chunk in archivo.chunks():
                     temp_file.write(chunk)
                 temp_file.flush()
 
-                # ✅ Leer archivo .nii desde el archivo temporal
                 imagen = nib.load(temp_file.name)
                 data = imagen.get_fdata()
 
-            # Ajustar tamaño si es necesario
+            # Resize si es necesario
             if data.shape != (64, 64, 64):
                 from scipy.ndimage import zoom
                 data = zoom(data, (64 / data.shape[0], 64 / data.shape[1], 64 / data.shape[2]))
 
-            # Normalizar y preparar tensor
+            # Normalizar
             data = (data - np.min(data)) / (np.max(data) - np.min(data) + 1e-6)
-            data = np.expand_dims(data, axis=0)  # canal
-            data = np.expand_dims(data, axis=0)  # lote
+            data = np.expand_dims(data, axis=0)
+            data = np.expand_dims(data, axis=0)
             tensor = torch.tensor(data).float()
 
             # Cargar modelo
@@ -48,15 +51,35 @@ def predecir_epilepsia(request):
             modelo.load_state_dict(torch.load(ruta_modelo, map_location='cpu'))
             modelo.eval()
 
-            # Predecir
             with torch.no_grad():
                 salida = modelo(tensor)
                 pred = salida.argmax().item()
 
             diagnostico = "Epilepsia" if pred == 1 else "No Epilepsia"
-            return JsonResponse({'resultado': diagnostico})
+
+            # Convertir imagen central a PNG
+            slice_index = 32  # Corte axial central
+            slice_data = data[0, 0, :, :, slice_index]
+
+            fig, ax = plt.subplots()
+            ax.imshow(slice_data, cmap='gray')
+            ax.axis('off')
+            buf = BytesIO()
+            plt.savefig(buf, format='png', bbox_inches='tight')
+            buf.seek(0)
+            img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+            buf.close()
+
+            return render(request, 'diagnostico_IA/resultado.html', {
+                'diagnostico': diagnostico,
+                'imagen_base64': img_base64
+            })
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return render(request, 'diagnostico_IA/resultado.html', {
+                'error': str(e)
+            })
 
-    return JsonResponse({'error': 'Método no permitido o archivo no enviado'}, status=400)
+    return render(request, 'diagnostico_IA/resultado.html', {
+        'error': 'Método no permitido o archivo no enviado'
+    })
