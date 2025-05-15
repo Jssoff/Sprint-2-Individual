@@ -21,7 +21,7 @@ def login_view(request):
         if usuario in USUARIOS_SIMULADOS and USUARIOS_SIMULADOS[usuario]['clave']== clave:
             request.session['usuario_autenticado'] = True
             request.session['rol'] = USUARIOS_SIMULADOS[usuario]['rol']
-            request.session['usuario'] = USUARIOS_SIMULADOS[usuario]
+            request.session['usuario'] = usuario
 
             return redirect('home')
         else:
