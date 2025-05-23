@@ -16,7 +16,7 @@ from nilearn import plotting, image
 from nilearn.image import resample_img
 import warnings
 import logging
-from pacientes.login import autenticacion, rol_requerido
+from sprint2individual.login import autenticacion, rol_requerido
 
 # Configurar el logger
 logging.basicConfig(level=logging.DEBUG)

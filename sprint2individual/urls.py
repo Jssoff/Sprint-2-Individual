@@ -2,9 +2,12 @@ from django.urls import path, include
 from .views import home
 from django.conf import settings
 from django.conf.urls.static import static
+from . import login
 
 urlpatterns = [
-   
+    path('login/', login.login_view, name='login'),
+    path('registro/', login.registrarse, name='registro'),
+    path('logout/', login.logout_view, name='logout'),
     path('', home, name='home'), 
     
     
