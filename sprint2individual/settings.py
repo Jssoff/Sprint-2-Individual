@@ -73,7 +73,7 @@ DATABASES = {
         'NAME': 'imagenes-db',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': '10.20.176.3    ',
+        'HOST': '10.20.176.3',
         'PORT': '5432',
     }
 }
