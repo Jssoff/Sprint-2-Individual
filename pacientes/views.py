@@ -4,9 +4,7 @@ from historias_clinicas.models import HistoriaClinica
 import time
 from .forms import PacienteForm
 from django.http import HttpResponse
-
-from .forms import PacienteForm
-from .login import autenticacion, rol_requerido
+from sprint2individual.login import autenticacion, rol_requerido
 
 @autenticacion
 def home(request):
