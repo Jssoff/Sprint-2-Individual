@@ -1,6 +1,6 @@
 
 from django.shortcuts import render
-import torch
+
 import nibabel as nib
 import numpy as np
 from django.conf import settings
