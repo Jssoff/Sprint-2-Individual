@@ -70,11 +70,11 @@ WSGI_APPLICATION = 'sprint2individual.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'pacientes_db',
-        'USER': 'azurlitos',
-        'PASSWORD': 'azurlitos',
+        'NAME': 'imagenes-db',
+        'USER': 'imagenes-db',
+        'PASSWORD': 'imagenes-db',
         'HOST': '34.45.138.48',
-        'PORT': '',
+        'PORT': '5432',
     }
 }
 
