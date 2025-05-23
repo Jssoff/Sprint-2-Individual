@@ -1,9 +1,7 @@
 from django.urls import path, include
-from .views import home, paciente_list, paciente_historial
-from . import views
+from .views import home
 from django.conf import settings
 from django.conf.urls.static import static
-from ..pacientes import login
 
 urlpatterns = [
    
