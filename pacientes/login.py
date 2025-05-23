@@ -1,6 +1,5 @@
 from functools import wraps
 from django.shortcuts import render, redirect 
-from .models import Paciente
 from django.contrib import messages
 
 def autenticacion(func):
