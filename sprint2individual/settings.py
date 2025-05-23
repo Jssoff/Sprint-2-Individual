@@ -70,7 +70,7 @@ WSGI_APPLICATION = 'sprint2individual.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'imagenes-db',
+        'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': '10.20.176.3',
