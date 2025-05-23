@@ -47,7 +47,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'pacientes.urls'
+ROOT_URLCONF = 'sprint2individual.urls'
 
 TEMPLATES = [
     {
@@ -65,7 +65,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'pacientes.wsgi.application'
+WSGI_APPLICATION = 'sprint2individual.wsgi.application'
 
 DATABASES = {
     'default': {
