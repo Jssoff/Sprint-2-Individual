@@ -71,9 +71,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'imagenes-db',
-        'USER': 'imagenes-db',
-        'PASSWORD': 'imagenes-db',
-        'HOST': '34.45.138.48',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': '10.20.176.3    ',
         'PORT': '5432',
     }
 }
