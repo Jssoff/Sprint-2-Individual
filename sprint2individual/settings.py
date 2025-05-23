@@ -73,7 +73,7 @@ DATABASES = {
         'NAME': 'pacientes_db',
         'USER': 'azurlitos',
         'PASSWORD': 'azurlitos',
-        'HOST': '10.9.0.3',
+        'HOST': '34.45.138.48',
         'PORT': '',
     }
 }
