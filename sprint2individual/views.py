@@ -11,4 +11,4 @@ def home(request):
 
 
 def formulario_remoto(request):
-    return redirect('https://diagnostico-ia-594687202111.us-central1.run.app/formulario_predecir/')
+    return redirect('https://diagnostico-ia-594687202111.us-central1.run.app/ia/formulario_predecir/')
