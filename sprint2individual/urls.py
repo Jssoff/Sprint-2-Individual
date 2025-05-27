@@ -1,5 +1,7 @@
 from django.urls import path, include
-from .views import home
+
+
+from .views import formulario_remoto, home
 from django.conf import settings
 from django.conf.urls.static import static
 from . import login
@@ -22,5 +24,5 @@ urlpatterns += [
     path('historias/', include('historias_clinicas.urls')),
     path('foro/', include('foro.urls')),
     path('diagnostico_IA/', include('diagnostico_IA.urls')),
-
+    path('formulario_ia/', formulario_remoto, name='formulario_ia')
 ]
