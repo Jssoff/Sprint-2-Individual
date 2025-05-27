@@ -8,6 +8,5 @@ def home(request):
     return render(request, 'sprint/home.html')
 
 
-@autenticacion
 def formulario_remoto(request):
     return redirect('https://diagnostico-ia-594687202111.us-central1.run.app/ia/formulario_predecir/')
