@@ -12,7 +12,6 @@ import plotly.graph_objects as go
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
-from django.conf import settings
 
 app = FastAPI()
 UPLOAD_DIR = "media/imagenes"
@@ -28,21 +27,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Obtener la URL de la base de datos desde settings.py de Django
-DATABASE_URL = None
-try:
-    db_settings = settings.DATABASES['default']
-    if db_settings['ENGINE'].endswith('postgresql') or db_settings['ENGINE'].endswith('postgresql_psycopg2'):
-        user = db_settings['USER']
-        password = db_settings['PASSWORD']
-        host = db_settings['HOST']
-        port = db_settings['PORT']
-        name = db_settings['NAME']
-        DATABASE_URL = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{name}"
-except Exception:
-    # Fallback a la URL hardcodeada si hay error
-    DATABASE_URL = "postgresql+psycopg2://azurlitos:azurlitos@10.5.192.3:5432/pacientes_db"
-
+# PostgreSQL config (same as Django)
+DATABASE_URL = "postgresql+psycopg2://azurlitos:azurlitos@10.5.192.3:5432/pacientes_db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

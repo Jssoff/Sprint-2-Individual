@@ -47,7 +47,7 @@
     <div class="patient-list">
         <ul>
             {% for paciente in pacientes %}
-                <li><a href="{% url 'visualizar_imagenes_paciente' paciente.id %}">{{ paciente.nombre }}</a></li>
+                <li><a href="{% url 'dj_visualizar_imagenes_paciente' paciente.id %}">{{ paciente.nombre }}</a></li>
             {% endfor %}
         </ul>
     </div>

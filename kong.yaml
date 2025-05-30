@@ -1,0 +1,133 @@
+  # Archivo de configuración de Kong para microservicios Django + FastAPI
+# Explicación:
+# - Cada servicio tiene su propio prefijo de ruta, evitando conflictos.
+# - El microservicio de imágenes (FastAPI) solo responde a /imagen y subrutas.
+# - Los upstreams permiten balanceo entre instancias.
+# - El plugin CORS está configurado para permitir peticiones desde los orígenes necesarios.
+
+services:
+  - name: pacientes_service
+    url: https://gestion-pacientes-594687202111.us-central1.run.app/pacientes/
+    routes:
+      - name: pacientes_routes
+        paths:
+          - /pacientes
+          - /pacientes/
+          - /pacientes/*
+          - /health
+        strip_path: true
+        preserve_host: false
+
+  - name: imagenes_service
+    host: imagenes_upstream
+    protocol: http
+    routes:
+      - name: imagenes_routes
+        paths:
+          - /imagen
+          - /imagen/
+          - /imagen/cargar
+          - /imagen/reducir
+          - /imagen/descargar
+          - /imagen/visualizar_paciente
+        strip_path: false  # No elimina el prefijo /imagen, FastAPI espera rutas completas
+        preserve_host: true
+
+  - name: diagnostico_service
+    host: diagnostico_upstream
+    protocol: http
+    routes:
+      - name: diagnostico_routes
+        paths:
+          - /diagnostico
+          - /diagnostico/
+          - /diagnostico/visualizar_paciente
+          - /diagnostico/seleccionar_paciente
+          - /diagnostico/imagen
+        strip_path: false
+        preserve_host: true
+
+  - name: historias_service
+    host: historias_upstream
+    protocol: http
+    routes:
+      - name: historias_routes
+        paths:
+          - /historias
+          - /historias/
+          - /api/historias
+          - /api/historia/crear
+        strip_path: false
+        preserve_host: true
+
+  - name: foro_service
+    host: foro_upstream
+    protocol: http
+    routes:
+      - name: foro_routes
+        paths:
+          - /foro
+          - /foro/
+          - /paciente/.*/foros
+          - /paciente/.*/crear_foro
+        strip_path: false
+        preserve_host: true
+
+  - name: diagnostico_ia_service
+    url: https://diagnostico-ia-594687202111.us-central1.run.app/ia/
+    routes:
+      - name: diagnostico_ia_routes
+        paths:
+          - /ia/
+          - /diagnostico_IA
+          - /diagnostico_IA/
+          - /predecir
+          - /formulario_predecir
+        strip_path: true
+        preserve_host: false
+
+upstreams:
+  - name: imagenes_upstream
+    targets:
+      - target: 10.128.0.53:8080
+        weight: 50
+      - target: 10.128.0.54:8080
+        weight: 50
+
+  - name: diagnostico_upstream
+    targets:
+      - target: 10.128.0.59:8080
+        weight: 50
+      - target: 10.128.0.60:8080
+        weight: 50
+
+  - name: historias_upstream
+    targets:
+      - target: 10.128.0.56:8080
+        weight: 50
+      - target: 10.128.0.57:8080
+        weight: 50
+
+  - name: foro_upstream
+    targets:
+      - target: 10.128.0.61:8080
+        weight: 50
+      - target: 10.128.0.62:8080
+        weight: 50
+
+plugins:
+  - name: cors
+    config:
+      origins: ["http://34.69.210.114:8000", "http://34.28.194.101:8080"]
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+      headers: ["Accept", "Authorization", "Content-Type", "X-CSRFToken"]
+      exposed_headers: ["Content-Type"]
+      credentials: true
+      max_age: 3600
+
+# Instrucciones:
+# 1. Elimina la ruta '/' de imagenes_service para evitar que capture todo el tráfico.
+# 2. Usa solo rutas que empiecen por /imagen para FastAPI.
+# 3. En tus templates Django, usa URLs como /imagen/upload/, /imagen/view/{filename}, etc.
+# 4. Kong enruta correctamente cada microservicio según el prefijo.
+# 5. Si agregas nuevas rutas en FastAPI, añádelas aquí bajo /imagen.
