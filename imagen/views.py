@@ -380,3 +380,7 @@ def mostrar_imagen(request, imagen_id):
         'imagen': imagen,
         'png_path': os.path.relpath(png_path, settings.MEDIA_ROOT)
     })
+
+def cargar_imagen_fastapi(request):
+    pacientes = Paciente.objects.all()
+    return render(request, 'imagen/cargar_imagen.html', {'pacientes': pacientes})
