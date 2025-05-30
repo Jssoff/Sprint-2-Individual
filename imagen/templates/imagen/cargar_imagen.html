@@ -53,10 +53,9 @@
 </head>
 <body>
     <h1>Cargar Imagen Médica</h1>
-    <form method="post" enctype="multipart/form-data" action="{% url 'dj_cargar_imagen' %}">
-        {% csrf_token %}
+    <form method="post" enctype="multipart/form-data" action="/imagen/upload/">
         <label for="archivo">Archivo de imagen:</label>
-        <input type="file" name="archivo" id="archivo" required>
+        <input type="file" name="file" id="archivo" required>
         <label for="paciente_id">Seleccione el Paciente:</label>
         <select name="paciente_id" id="paciente_id" required>
             {% for paciente in pacientes %}

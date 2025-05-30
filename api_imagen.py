@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
@@ -35,9 +35,23 @@ class ImagenMedica(Base):
     vista_sagital = Column(String, nullable=True)
     vista_coronal = Column(String, nullable=True)
 
-@app.get("/imagen/view/{filename}")
-def get_image(filename: str):
-    file_path = os.path.join(UPLOAD_DIR, filename)
-    if not os.path.exists(file_path):
-        return JSONResponse(status_code=404, content={"error": "File not found"})
-    return FileResponse(file_path)
+@app.post("/imagen/upload/")
+async def upload_image(file: UploadFile = File(...), paciente_id: str = Form(...)):
+    # Solo guarda el registro en la base de datos, no guarda el archivo
+    db = SessionLocal()
+    try:
+        imagen_db = ImagenMedica(
+            nombre=file.filename,
+            archivo=file.filename,  # Solo el nombre, no la ruta
+            fecha_carga=datetime.utcnow(),
+            paciente_id=int(paciente_id),
+            vista_axial=None,
+            vista_sagital=None,
+            vista_coronal=None
+        )
+        db.add(imagen_db)
+        db.commit()
+        db.refresh(imagen_db)
+    finally:
+        db.close()
+    return {"filename": file.filename, "paciente_id": paciente_id, "msg": "Imagen registrada en la base de datos (no guardada en disco)"}
